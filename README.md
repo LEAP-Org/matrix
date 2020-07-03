@@ -2,6 +2,9 @@
 
 This repository hosts the hardware schematics and PCB designs for LEAP transmission controller.
 
+## Block Diagram
+[Block Diagram](/block/LEAP%20Controller%20V1.png)
+
 ## Modules
 1. System Clock: Crystal or 555. To start however we should set up a 555 in astable, bistable and monostable to allow us to have a regular clock period while having the ability to freeze the clock and step through each iteration sequentially.
 2. Power Driver: Transformer and full bridge rectifier for converting outlet VAC to VDC. In addition standard PWM fans require 12VDC so we need a 12V and 5V voltage regulators for our motherboard power and RPi Power
