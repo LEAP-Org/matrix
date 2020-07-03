@@ -3,7 +3,7 @@
 This repository hosts the hardware schematics and PCB designs for LEAP transmission controller.
 
 ## Block Diagram
-[Block Diagram](/block/LEAP%20Controller%20V1.png)
+![image](/block/LEAP%20Controller%20V1.png)
 
 ## Modules
 1. System Clock: Crystal or 555. To start however we should set up a 555 in astable, bistable and monostable to allow us to have a regular clock period while having the ability to freeze the clock and step through each iteration sequentially.
