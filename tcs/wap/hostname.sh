@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+# set systemd hostname
+if ![ $(nmcli general hostname)==$HOSTNAME ]; then
+    echo "custom hostname already set."
+    exit 0
+fi
+
+# set local hostname
+sudo /usr/bin/hostnamectl set-hostname "$HOSTNAME" --static
+# set discoverable hostname
+sudo avahi-set-host-name "$HOSTNAME"

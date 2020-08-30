@@ -1,0 +1,76 @@
+# TCS Logging Configuration
+# -------------------------
+# Copyright © 2020 LEAP. All Rights Reserved.
+
+version: 1
+disable_existing_loggers: True
+loggers:
+  # default logger for unregistered modules
+  '':
+    level: 'DEBUG'
+    handlers: ['default_handler']
+  tcs.controller.tcu:
+    level: 'DEBUG'
+    handlers: ['tcu_handler']
+    propagate: no
+  tcs.file.file_parser:
+    level: 'DEBUG'
+    handlers: ['fp_handler']
+    propagate: no
+  tcs.codec.cache:
+    level: 'DEBUG'
+    handlers: ['cache_handler']
+    propagate: no
+  tcs.controller.queue_constructor:
+    level: 'DEBUG'
+    handlers: ['qc_handler']
+    propagate: no
+  tcs.controller.register:
+    level: 'DEBUG'
+    handlers: ['register_handler']
+    propagate: no
+  tcs.codec.spatial_codec:
+    level: 'DEBUG'
+    handlers: ['sc_handler']
+    propagate: no
+
+handlers:
+  default_handler:
+    class: 'logging.FileHandler'
+    filename: tcs/logs/root.log
+    level: 'DEBUG'
+    formatter: default
+  tcu_handler:
+    class: 'logging.FileHandler'
+    filename: tcs/logs/tcu.log
+    level: 'DEBUG'
+    formatter: default
+  qc_handler:
+    class: 'logging.FileHandler'
+    level: 'DEBUG'
+    filename: tcs/logs/queue.log
+    formatter: default
+  fp_handler:
+    class: 'logging.FileHandler'
+    level: 'DEBUG'
+    filename: tcs/logs/file_parser.log
+    formatter: default
+  cache_handler:
+    class: 'logging.FileHandler'
+    level: 'DEBUG'
+    filename: tcs/logs/cache.log
+    formatter: default
+  register_handler:
+    class: 'logging.FileHandler'
+    level: 'DEBUG'
+    filename: tcs/logs/register.log
+    formatter: default
+  sc_handler:
+    class: 'logging.FileHandler'
+    level: 'DEBUG'
+    filename: tcs/logs/spatial_codec.log
+    formatter: default
+
+formatters:
+  default:
+    format: '%(asctime)s - %(name)s - %(lineno)d - %(levelname)s : %(message)s'
