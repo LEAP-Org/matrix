@@ -48,7 +48,7 @@ jobs:
       run: |
         coverage run -m unittest discover -v && coverage report
         # upload codecov token
-        codecov --token=e1e32cf6-053e-4a2a-8477-0f593920e3fd
+        codecov --token=a1ffb52f-3e83-46c1-a806-9d8298f76412
         
   # integration:
   #   runs-on: ubuntu-latest
