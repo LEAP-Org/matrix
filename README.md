@@ -1,15 +1,51 @@
-# README
+# Light Emitting Access Point Tesseract
+
+![img](/docs/img/LEAP_INS.png)
+
+[![LEAP Tesseract](https://github.com/LEAP-Org/LEAP/workflows/Python%20application/badge.svg?branch=master)](https://github.com/cSDes1gn/LEAP/actions?query=workflow%3A%22Python+application%22)
+[![codecov](https://codecov.io/gh/LEAP-Org/LEAP/branch/master/graph/badge.svg?token=MUX4PVSGNW)](https://codecov.io/gh/LEAP-Org/LEAP)
+
+
+## Navigation
+1. [About](#Absract)
+2. [Run](#Run)
+3. [Website](#Website)
+4. [Accolades](#accolades)
+
+## About
+The Light Emitting Access Point (LEAP) Project is a proof-of-concept for a one-way, encryption independent, wireless communication system. Modern network infrastructure such as fibre optic, fixed/mobile wireless, and satellite relies on encryption to keep data secure due to the nature of their transmission mediums. Encryption algorithms are becoming increasingly complex adding computational overhead to networking systems. Therefore, encryption is not a sustainable solution for long-term network security.
+
+LEAP provides a platform for a new wave of secure transmission technologies that operate securely independent of encryption algorithms. LEAP uses a rigorous design philosophy with a custom data transfer protocol framework emphasizing data security. The LEAP transmitter uses light to transmit data to a single or multiple cameras or photo receiving devices over short-ranges within line-of-sight. It exploits two and three-dimensional matrices enabling simultaneous communication to multiple users by computing the relative position of each receiving device. This is accomplished using a specialized encoding and decoding algorithm by applying concepts in Euclidean space and infinite mathematics. Finally, added cell multiplicity results in a proportional increase in the theoretical bandwidth capabilities, distinguishing it from conventional single-cell light communication technologies.
+
+## Run
+Applications are run by the following set of commands at the root-level directory /LEAP
+
+First time setup:
+```bash
+./setup.sh
+```
+Server initialization:
+```bash
+./run-tcs.sh
+```
+Client initialization:
+```bash
+./run-rcs.sh
+```
+
+## Website
+
+Our website is moving to leapsystems.online and is currently under development. In the meantime you can visit our [Legacy Information Page](https://stevenzhou2.github.io/TheLeapProject/)
+
+## Accolades
+
+### Cowie Innovation Award
+
+The Cowie Innovation Award is given on the recommendation of the Dean of the Faculty of Engineering and Design, to one student or one team of students in the final year of a Bachelor of Engineering degree for demonstrating top quality innovation in Engineering. It was established in 2006 by Alexandra Cowie in memory of her late husband, Wilbur Elliott Cowie, BASc, MASc (Toronto), PEng.
+
+The fourth year capstone project Light Emitting Access Point (LEAP) has won the 2020 W.E. Cowie Innovation Award, valued at $27,000. You can read the news brief covered by Carleton University [here](https://carleton.ca/sce/2020/systems-capstone-project-won-the-w-e-cowie-innovation-award/).
+
+### Promotional Video Competition
+Our [promotional video](https://www.youtube.com/watch?v=aiTprGXODSQ) won first place in Systems and Computer Engineering Departments video competition. The team won $1000 and will be featured on the SCE departments' recruitment web-page.
 
 This repository hosts the hardware schematics and PCB designs for LEAP transmission controller.
-
-## Block Diagram
-![image](/block/LEAP%20Controller%20V1.png)
-
-## Modules
-1. System Clock: Crystal or 555. To start however we should set up a 555 in astable, bistable and monostable to allow us to have a regular clock period while having the ability to freeze the clock and step through each iteration sequentially.
-2. Power Driver: Transformer and full bridge rectifier for converting outlet VAC to VDC. In addition standard PWM fans require 12VDC so we need a 12V and 5V voltage regulators for our motherboard power and RPi Power
-3. Serial-To-Parallel converter using an XXHC595 (not sure what model is best yet) coupled with a 4 bit counter (4017) for producing the RCLK for the latches every 8 SCLK cycles 
-4. Spatial Encoder: Pretty straight forward encoding logic I want to merge DCL inside it at some point
-5. Directional Control Logic: 2 bit control signal specifies the transmission direction and translates the encoded data accordingly. 
-6. I want to introduce an error correction module at the end since we are pipelining our parallel lines and if the check is successful we have a chip enable for the matrix controller (some tristate buffers would work). I realize parity may not be the right solution.
-7. PWM fan driver for the Pi. RPi's get hot especially if run as a server machine. We should have a proper heatsink and cooling solution for the Pi. Im not sure if I just want it controlled through PWM on the Pi. Ideally I want to Pi to automatically change the fan speed based on its internal temperature reading rather than writing code to do it. This would require some control logic.
