@@ -2,8 +2,8 @@
 
 ![img](/docs/img/LEAP_INS.png)
 
-[![LEAP Tesseract](https://github.com/LEAP-Org/LEAP/workflows/Python%20application/badge.svg?branch=master)](https://github.com/cSDes1gn/LEAP/actions?query=workflow%3A%22Python+application%22)
-[![codecov](https://codecov.io/gh/LEAP-Org/LEAP/branch/master/graph/badge.svg?token=MUX4PVSGNW)](https://codecov.io/gh/LEAP-Org/LEAP)
+[![LEAP Tesseract](https://github.com/LEAP-Systems/tesseract/workflows/Tesseract%20Build/badge.svg?branch=master)](https://github.com/LEAP-Systems/tesseract/actions?query=workflow%3A%22LEAP+Tesseract%22)
+[![codecov](https://codecov.io/gh/LEAP-Systems/tesseract/branch/master/graph/badge.svg?token=QZ3AXPMDPA)](https://codecov.io/gh/LEAP-Systems/tesseract)
 
 
 ## Navigation
