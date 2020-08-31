@@ -34,6 +34,7 @@ import numpy as np
 import math
 
 from tcs.codec.spatial_codec import SpatialCodec
+from tcs.event.registry import EventRegistry
 
 
 class constants:
@@ -73,6 +74,8 @@ class TransmissionCache:
             raise ValueError
         self._spatial_codec = SpatialCodec(cube_dim, constants.HM)
         self._cache = list()
+        with EventRegistry() as event:
+            event.register('VALIDATE_APR', self.check)
         self.log.info("%s successfully instantiated", __name__)
  
     def cache_map(self, bin_frame: bitarray, ap_index: int) -> bitarray:
