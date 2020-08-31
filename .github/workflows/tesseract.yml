@@ -8,6 +8,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+    types: [opened, synchronize, reopened]
 
 jobs:
   lint:
@@ -20,7 +21,7 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        apt install shellcheck
+        sudo apt install shellcheck
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
