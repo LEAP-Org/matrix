@@ -29,9 +29,9 @@ jobs:
         # stop the build if there are Python syntax errors or undefined names in tcs modules
         flake8 tcs --count --select=E9,F63,F7,F82 --show-source --statistics --builtins='self'
     - name: Lint with shellcheck
-    run: |
-      # run against all bash scripts in /bin
-      shellcheck bin/*
+      run: |
+        # run against all bash scripts in /bin
+        shellcheck bin/*
         
   
   coverage:
