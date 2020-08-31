@@ -68,10 +68,7 @@ class EventRegistry:
             self.log.error("Event type does not exist in registry")
         else:
             for event in events:
-                try:
-                    Thread(target=event.isr, args=(*args,), kwargs=kwargs, daemon=True).start()
-                except RuntimeError as exc:
-                    self.log.exception("During a thread dispatch an exception occured: %s", exc)
+                event.isr(args,kwargs)
             self.log.info("Successfully dispatched all events for %s", event_type)
 
     def register(self, event_type: str, isr):
