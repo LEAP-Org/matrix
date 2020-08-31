@@ -20,15 +20,19 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
+        apt install shellcheck
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names in tcs and rcs modules
+        # stop the build if there are Python syntax errors or undefined names in tcs modules
         flake8 tcs --count --select=E9,F63,F7,F82 --show-source --statistics --builtins='self'
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide (skip for now)	
-        # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Lint with shellcheck
+      run: |
+        # run against all bash scripts in /bin
+        shellcheck bin/*
+        
   
   coverage:
     runs-on: ubuntu-latest
