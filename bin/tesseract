@@ -22,7 +22,7 @@ echo -e "Updated: ${OKBLUE}2020-07${ENDC}\n"
 echo "Setting up environment ..."
 export DIM=4
 export T_FREQ=30
-export HOSTNAME=localhost
+export HOSTNAME=LEAP
 export PORT=65432
 export SERIAL_PORT=/dev/ttyUSB0
 export TCS_ENV=dev
