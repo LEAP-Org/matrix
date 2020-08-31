@@ -20,11 +20,11 @@ import socket
 from threading import Thread
 import logging.config
 
-from tcs.event.handler import EventHandler
+from tcs.event.registry import EventHandler
 
 class ApHandler:
 
-    def __init__(self, hostname):
+    def __init__(self, hostname:str):
         self.log = logging.getLogger(__name__)
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # register shutdown ISR
