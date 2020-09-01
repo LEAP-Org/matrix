@@ -31,7 +31,7 @@ class ApHandler:
         with EventRegistry() as event:
             event.register('SHUTDOWN', self.shutdown)
             event.register('APR_VALIDATED', self.init_connection)
-            event.register('NOTIFY_CLIENT', self.notify_status)
+            event.register('POST_REQUEST', self.post_request)
         self.ap_thread = Thread(target=self.start,daemon=True)
         self.host = os.environ.get('HOSTNAME')
         self.port = int(os.environ.get('PORT'))
@@ -63,53 +63,53 @@ class ApHandler:
             self.log.info("Waiting for receiver request on port %s", self.port)
             self.soc.listen()
             self.conn, self.addr = self.soc.accept()
-            with self.conn as conn:
-                self.log.info("Connected by device at: %s", addr)
-                # receive a bitarray object
-                apr = pickle.loads(self.conn.recv(2048))
-                self.log.info("Validating received APR key: %s", apr)
-                # APR verification
-                with EventRegistry() as event:
-                    event.execute('VALIDATE_APR', apr)
-        
-    def init_connection(self, ap:int):
+            self.log.info("Connected by device at: %s", self.addr)
+            # receive a bitarray object
+            apr = self.get_request()
+            self.log.info("Validating received APR key: %s", apr)
+            # APR verification
+            with EventRegistry() as event:
+                event.execute('VALIDATE_APR', apr)
+
+    def init_connection(self, ap_index:int):
         """
         """
         self.log.info("Initializing receiver at AP: %s", ap_index)
         # Notify success
-        with self.conn as conn:
-            self.notify_status(True, "Defining session at AP: {}".format(ap_index))
-            frame_cnt, files = self.get_attributes() # generate file list and counts on request
-            self.log.info("Sending frame counts: %s", frame_cnt)
-            conn.send(pickle.dumps(frame_cnt))
-            self.log.info("Sending file names: %s", files)
-            time.sleep(1)
-            conn.send(pickle.dumps(files))
-            file_index = pickle.loads(conn.recv(1024))
-
+        self.post_request(True, msg="Defining session at AP: {}".format(ap_index))
+        frame_cnt, files = self.get_attributes() # generate file list and counts on request
+        self.log.info("Sending frame counts: %s and file names: %s", frame_cnt, files)
+        self.post_request(obj=(frame_cnt,files))
+        file_index = self.get_request()
         for _,index in enumerate(file_index):
             files = self.file_list[index]
         self.log.info('Received Request for: %s', files)
-
         with EventRegistry() as event:
-            event.execute('SESSION_INIT', ap)
-
-    def notify_status(self, status:bool, msg:str):
+            event.execute('SESSION_INIT', ap_index)
+            
+    def post_request(self, obj:object, msg:str=""):
         """
-        This function is bound to event:NOTIFY_CLIENT. It dumps a boolean status of the requested 
-        job and a message back to the connecting client.
+        This function is bound to event:POST_REQUEST. It pickles an object to the client and sends
+        an optional message.
 
-        :param status: boolean flag for status result
-        :param msg: message to client
+        :param obj: object to pickle to client
+        :param msg: optional message to client
         """
         with self.conn as conn:
-            conn.send(pickle.dumps(status))
-            conn.send((msg).encode('utf-8'))
+            conn.send(pickle.dumps(obj))
+            if len(msg) > 0:
+                conn.send((msg).encode('utf-8'))
 
-    def notify_failure(self):
+    def get_request(self, size:int=2048):
+        """
+        This function is bound to event:POST_REQUEST. It pickles an object to the client and sends
+        an optional message.
+
+        :param size: size for byte load (default fo 2048)
+        :return: object pickled from client
+        """
         with self.conn as conn:
-            conn.send(pickle.dumps(False))
-            conn.send(("Access Point Registry invalid. Request declined.").encode('utf-8'))
+            return pickle.loads(conn.recv(size))
 
     def shutdown(self):
         """
