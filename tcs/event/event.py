@@ -27,7 +27,7 @@ class Event:
         if not callable(isr):
             raise TypeError
         self.isr = isr
-        self.log.info("Created event: %s", __name__)
+        self.log.info("Created event: %s", self)
 
     def set_mask(self, state: bool):
         """ Set the mask of this Event """
