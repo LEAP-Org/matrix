@@ -54,10 +54,10 @@ import threading_sched as sched
 from bitarray import bitarray
 
 from tcs.codec.cache import TransmissionCache
-from tcs.controller.register import ReceiverRegister
+from tcs.controller.registry import APRegistry
 from tcs.file.file_parser import FileParser
 
-from tcs.event.handler import EventHandler
+from tcs.event.registry import EventRegistry
  
 class constants:
     """Transmission control unit constants class"""
@@ -140,7 +140,7 @@ class TransmissionControlUnit:
         self._file_data = list()
 
         # event registration
-        with EventHandler as event:
+        with EventRegistry() as event:
             event.register('SHUTDOWN', self.shutdown)
  
         # Custom object field initializations
