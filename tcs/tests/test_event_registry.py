@@ -20,19 +20,12 @@ from tcs.event.event import Event
 class TestEvents(unittest.TestCase):
 
     def setUp(self):
-        pass
+        """ Clear the event registry """
+        with EventRegistry() as event:
+            event._event_registry = {}
 
     def tearDown(self):
-        """ Remove test events from the registry """
-        with EventRegistry() as event:
-            try:
-                event._event_registry.pop('TEST_EVENT')
-            except KeyError:
-                pass
-            try:
-                event._event_registry.pop('SECONDARY_EVENT')
-            except KeyError:
-                pass
+        pass
 
     def test_isr_type(self):
         """ Attempt to create an event with an uncallable callback """
@@ -81,8 +74,8 @@ class TestEvents(unittest.TestCase):
         param = Mock()
         with EventRegistry() as event:
             event.execute('TEST_EVENT', param)
-        isr1.assert_called_once_with(param)
-        isr2.assert_called_once_with(param)
+        isr1.assert_called_once()
+        isr2.assert_called_once()
         self.assertTrue(isr3.call_count == 0)
 
     def test_masked_execute(self):
