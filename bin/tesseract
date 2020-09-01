@@ -16,23 +16,25 @@ echo -e "Christian Sargusingh | ${OKBLUE}Lead Designer and Systems Engineer${END
 echo -e "Aaron Huang          | ${OKBLUE}Hardware Engineer${ENDC}"
 echo -e "Brandon Zhu          | ${OKBLUE}Software Engineer${ENDC}"
 echo -e "Steven Zhou          | ${OKBLUE}QA and Software Engineer${ENDC}"
-echo -e "Version: ${OKBLUE}0efde6d3eaaedaa3a20b7c62145d4b3987a98609 @ https://github.com/LEAP-Org/LEAP.git${ENDC}"
-echo -e "Updated: ${OKBLUE}2020-07${ENDC}\n"
+echo -e "Version: ${OKBLUE}38bb9a56f7b1d7cf1b866e1bb883d81df54b179c @ https://github.com/LEAP-Systems/tesseract${ENDC}"
+echo -e "Updated: ${OKBLUE}2020-08${ENDC}\n"
 # setup environment
 echo "Setting up environment ..."
 export DIM=4
 export T_FREQ=30
 export HOSTNAME=LEAP
+export PASSWORD=leap-ap0
 export PORT=65432
 export SERIAL_PORT=/dev/ttyUSB0
 export TCS_ENV=dev
 
-echo -e "Set transmitter dimension to ${OKGREEN}$DIM${ENDC}"
-echo -e "Set transmitter frequency to ${OKGREEN}$T_FREQ${ENDC}"
-echo -e "Set transmitter address to ${OKGREEN}$HOSTNAME:$PORT${ENDC}"
-echo -e "Set transmitter serial out to ${OKGREEN}$SERIAL_PORT${ENDC}"
-echo -e "Set tcs environment to ${OKGREEN}$TCS_ENV${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}complete "
+echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter dimension to ${OKGREEN}$DIM${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter frequency to ${OKGREEN}$T_FREQ${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter address to ${OKGREEN}$HOSTNAME:$PORT${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}Set access point password to ${OKGREEN}$PASSWORD${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter serial out to ${OKGREEN}$SERIAL_PORT${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}Set tcs environment to ${OKGREEN}$TCS_ENV${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}Setup complete "
 echo -e "-----------------------------------\n"
 
 # tcs entry
