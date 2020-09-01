@@ -58,15 +58,15 @@ class TestCache(unittest.TestCase):
     def test_cache_miss(self):
         """Verify cache miss is correctly identified"""
         with self.assertRaises(ValueError):
-            self.cache.check(
+            self.cache.validate(
                 bitarray('1111100110100110100001100001010110010101010000100000011011110100'))
         
     def test_cache_hit(self):
         """Verify cache hit is correctly identified  at each access point"""
-        assert self.cache.check(ap0) == 0
-        assert self.cache.check(ap1) == 1
-        assert self.cache.check(ap2) == 2
-        assert self.cache.check(ap3) == 3
+        assert self.cache.validate(ap0) == 0
+        assert self.cache.validate(ap1) == 1
+        assert self.cache.validate(ap2) == 2
+        assert self.cache.validate(ap3) == 3
 
     def test_cache_mapping(self):
         """Verify the TransmissionCache correctly caches based on mocked input stream from SC"""
