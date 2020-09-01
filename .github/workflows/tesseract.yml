@@ -33,7 +33,22 @@ jobs:
       run: |
         # run against all bash scripts in /bin
         shellcheck bin/*
-        
+    
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Unittest Suite Execution
+      run: |
+        python3 -m unittest discover -s tcs/tests
   
   coverage:
     runs-on: ubuntu-latest
