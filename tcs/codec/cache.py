@@ -126,4 +126,4 @@ class TransmissionCache:
                         self.log.info("Validated APR key: %s", apr)
                         return
             self.log.info("Revoked APR key: %s", apr)
-            event.trigger('APR_REJECTED')
+            event.execute('POST_REQUEST', False, "Access Point Registry invalid. Request declined.")
