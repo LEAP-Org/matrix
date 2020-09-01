@@ -118,7 +118,7 @@ class TransmissionCache:
         :returns:
         """
         # FIXME: If cache is a dict based approach the retrieval time is significantly faster
-        with EventRegistry as event:
+        with EventRegistry() as event:
             for i in range(len(self._cache)):
                 for j in range(len(self._cache[i])):
                     if apr == self._cache[i][j]:
