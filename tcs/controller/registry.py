@@ -23,7 +23,7 @@ Copyright © 2020 LEAP. All Rights Reserved.
 
 import logging.config
 from tcs.controller.queue_constructor import SessionQueue
-from tcs.event.handler import EventHandler
+from tcs.event.registry import EventRegistry
  
 class RegisterConstants:
     """Constants class"""
@@ -58,7 +58,7 @@ class APRegistry:
             raise RuntimeError
         APRegistry.__instance = self
         # register session events
-        with EventHandler() as event:
+        with EventRegistry() as event:
             event.register('SESSION_INIT', self.insert)
             event.register('SESSION_END', self.remove)
         self._sess_reg = [None, None, None, None]
