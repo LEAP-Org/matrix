@@ -122,7 +122,7 @@ class TransmissionCache:
             for i in range(len(self._cache)):
                 for j in range(len(self._cache[i])):
                     if apr == self._cache[i][j]:
-                        event.trigger('APR_VALIDATED', j)
+                        event.execute('APR_VALIDATED', j)
                         self.log.info("Validated APR key: %s", apr)
                         return
             self.log.info("Revoked APR key: %s", apr)
