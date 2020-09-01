@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-LEAP™ Event Handler
+LEAP™ Event Registry
 ===================
 Contributors: Christian Sargusingh
 Modified: 2020-07
@@ -70,6 +70,7 @@ class EventRegistry:
             for event in events:
                 event.isr(args,kwargs)
             self.log.info("Successfully dispatched all events for %s", event_type)
+        self.log.info(self)
 
     def register(self, event_type: str, isr):
         """
@@ -88,4 +89,5 @@ class EventRegistry:
                 # create an empty queue if event type is not in the registry
                 self._event_registry[event_type] = {event}
             self.log.info("Registered event: %s with isr: %s to the registry", event, event.isr)
+        self.log.info(self)
         
