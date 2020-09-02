@@ -17,7 +17,7 @@ import unittest
 
 from bitarray import bitarray
 
-from tcs.controller.queue_constructor import SessionQueue
+from tcs.tcu.queue_constructor import SessionQueue
 
 
 class TestQueueConstructor(unittest.TestCase):
