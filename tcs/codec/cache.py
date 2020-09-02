@@ -67,12 +67,8 @@ class TransmissionCache:
         """Initializes empty list for cached frames and stores a reference to the `SpatialCodec`
         object instantiated by the TCU.
         """
-        cube_dim = os.environ['DIM']
+        cube_dim = int(os.environ['DIM'])
         self.log = logging.getLogger(__name__)
-        if cube_dim < 0 or math.ceil(np.log2(cube_dim)) != np.log2(cube_dim):
-            self.log.error(
-                "Received unexpected cube dimension size. Cube dimension must be a power of 2.")
-            raise ValueError
         self._spatial_codec = SpatialCodec(cube_dim, constants.HM)
         self._cache = list()
         with EventRegistry() as event:
