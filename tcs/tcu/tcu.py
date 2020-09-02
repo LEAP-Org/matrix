@@ -45,12 +45,13 @@ import math
 import random
 import sys
 import time
-import threading
+import os
 
 import numpy as np
 import serial
 import tabulate
 import threading_sched as sched
+from threading import Thread
 from bitarray import bitarray
 
 from tcs.codec.cache import TransmissionCache
@@ -124,74 +125,28 @@ class TransmissionControlUnit:
      - `IOError`: for `Serial.SerialException` raise by arduino serial monitor
     """
  
-    def __init__(self, init_params):
+    def __init__(self):
         
         self.log = logging.getLogger(__name__)
 
         # Data type field initialization
-        self.cube_dim = 0
-        self.transmit_freq = 0
-        self.port = 0
-        self.transmitter_port = init_params[4]
-        self.debug = init_params[5]
-        self.host = init_params[2]
-        self.file_list = list()
-        self.frame_cnt = list()
-        self._file_data = list()
+        self.cube_dim = int(os.environ['DIM'])
+        self.transmit_freq = int(os.environ['T_FREQ'])
+        self.transmitter_port = os.environ['SERIAL_PORT']
 
         # event registration
         with EventRegistry() as event:
             event.register('SHUTDOWN', self.shutdown)
- 
-        # Custom object field initializations
-        self.cache = None
-        self.rec_reg = None
-        self.ser = None
+
         # define sched object from the threading_sched thread safe module implementation
         self.sch = sched.scaled_scheduler(time.time, time.sleep)
  
         # Threading initializations
         # daemon threads declared for simultaneous shutdown of all threads
-        # self.sched_thread = Thread(target=self.scheduler,daemon=True)
- 
-        # Validate type matching for parameters
-        try:
-            cube_dim = int(init_params[0])
-            transmit_freq = int(init_params[1])
-            port = int(init_params[3])
-        except ValueError as exc:
-            self.log.exception(
-                "TCU initialization failed. Dimension, frequency, and port number must be ints.")
-            self.log.exception(exc)
-            raise ValueError from exc
-        
-        # Validate cube dimension is a power of 2 and is non-negative
-        if cube_dim > 0 and math.ceil(np.log2(cube_dim)) == np.log2(cube_dim):
-            self.cube_dim = cube_dim
-            # init spatial codec for cache _map definition
-            self.cache = TransmissionCache(self.cube_dim)
-        else:
-            self.log.error("""TCU initialization failed. TCU initialization failed. LEAP™ only 
-                supports dimensions which are powers of 2.""")
-            raise ValueError
- 
-        # Validate frequency values are in the allowable range
-        if 0 < transmit_freq <= 480:
-            self.transmit_freq = 1/transmit_freq # convert to seconds
-        else:
-            self.log.error(
-                "TCU initialization failed. LEAP™ supports frequencies between 1Hz and 480Hz.")
-            raise ValueError
- 
+        self.sched_thread = Thread(target=self.scheduler,daemon=True)
+
+        self.transmit_freq = 1/self.transmit_freq # convert to seconds
         self.log.info("Transmission frame intervals set to : %s s", self.transmit_freq)
-        
-        # Validate port number
-        if 0 < port <= 65535:
-            self.port = port
-        else:
-            self.log.error(
-                "TCU initialization failed. Specify a valid port number (0 - 65535)")
-            raise ValueError
 
         # initialize arduino serial connection
         try:
@@ -206,11 +161,6 @@ class TransmissionControlUnit:
         else:
             self.log.info("Transmitter serial connection successfully established.") 
         self.log.info("%s successfully instantiated", __name__)
-    
-    def start(self):
-        """Starts transmission scheduler and access point listener thread. Diverts `main` to
-        console input listener for server shutdown request.
-        """
         self.scheduler()
  
     def shutdown(self):
@@ -311,7 +261,7 @@ class TransmissionControlUnit:
          - `IOError`: if during a `Serial.SerialTimeoutException` exception handle a 
          `Serial.SerialException` is raised.
         """
-        if self.debug:
+        if os.environ['TCS_ENV'] == 'dev':
             input("\nDEBUG MESSAGE: Press enter for next frame")
  
         # disconnect handle
@@ -323,7 +273,7 @@ class TransmissionControlUnit:
             hardware_encode = self.cache.cache_map(bin_frame,ap_index)
             transmit_hex = binascii.hexlify(hardware_encode.tobytes())
             print(str(hex_code) + " | To Access Point " + str(ap_index), end='\r')
-            if self.debug:
+            if os.environ['TCS_ENV'] == 'dev':
                 # TODO: Move these prints to cache logger
                 self.log.debug("Binary Frame Data: %s", bin_frame)
                 self.log.debug("Hardware Mapping: %s", hardware_encode)
