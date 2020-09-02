@@ -28,7 +28,7 @@ Dependencies
 Copyright © 2020 LEAP. All Rights Reserved.
 """
 import logging.config
-
+import os
 import bitarray
 import numpy as np
 import math
@@ -63,10 +63,11 @@ class TransmissionCache:
      - `_spatial_codec` (`SpatialCodec`): TCU spatial encoder object
     """
 
-    def __init__(self, cube_dim: int):
+    def __init__(self):
         """Initializes empty list for cached frames and stores a reference to the `SpatialCodec`
         object instantiated by the TCU.
         """
+        cube_dim = os.environ['DIM']
         self.log = logging.getLogger(__name__)
         if cube_dim < 0 or math.ceil(np.log2(cube_dim)) != np.log2(cube_dim):
             self.log.error(
