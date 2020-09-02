@@ -64,7 +64,7 @@ class FileParser:
         self.cube_dim = os.environ['DIM']
         self.log.info("%s successfully instantiated", __name__)
     
-    def load(self):
+    def load(self, ap_index:int):
         """Extracts files under module defined by directory
     
         Args:
@@ -78,8 +78,7 @@ class FileParser:
         - OSError: If length of the path list is 0, or error in opening files specified by file paths
         """
         file_data = list()
-        frame_cnt = list()
-    
+        frame_cnt=list()
         # main loop to extract data from all files under specified directory
         for path in self.f_paths:
             try:
@@ -89,8 +88,10 @@ class FileParser:
                 self.log.exception("Unable to open file: %s", exc)
                 raise OSError from exc
             frame_cnt.append(len(path))
+            #TODO: add back framecnt exchange with client
         with EventRegistry() as event:
-            event.execute('FETCHED_PAYLOAD', args=(self.file_list, frame_cnt, file_data)) 
+            event.execute('POST_FRAMECNT', ap_index, sum(frame_cnt))
+            event.execute('SESSION_INIT', ap_index, self.file_list, file_data)
     
     def _str_bits(self, string) -> list:
         """Converts a utf-8 string sequence into a series of `bitarray` objects with length of 56.
