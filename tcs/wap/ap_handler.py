@@ -13,9 +13,6 @@ Dependencies
  
 Copyright © 2020 LEAP. All Rights Reserved.
 """
-import time
-import os
-from threading import Thread
 import logging.config
 
 from tcs.event.registry import EventRegistry
@@ -29,23 +26,16 @@ class ApHandler:
         # register shutdown ISR
         with EventRegistry() as event:
             event.register('APR_VALIDATED', self.init_connection)
+            event.register('POST_FRAMECNT', self.post_frame_count)
         self.log.info("%s successfully instantiated", __name__)
 
     def init_connection(self, ap_index:int):
-        """
-        """
         self.log.info("Initializing receiver at AP: %s", ap_index)
         self.socket.register(ap_index)
         # Notify success
         self.socket.post_request(ap_index, obj=True, msg="Defining session at AP: {}".format(ap_index))
-        ##################### This section should be its own method
-        # frame_cnt, files = self.get_attributes() # generate file list and counts on request
-        # self.log.info("Sending frame counts: %s and file names: %s", frame_cnt, files)
-        # self.socket.post_request(ap_index, obj=(frame_cnt,files))
-        # file_index = self.socket.get_request(ap_index)
-        # for _,index in enumerate(file_index):
-        #     files = self.file_list[index]
-        ###################################
-        # self.log.info('Received Request for: %s', files)
         with EventRegistry() as event:
-            event.execute('SESSION_INIT', ap_index)
+            event.execute('FETCH_PAYLOAD')
+    
+    def post_frame_count(self, ap_index:int, framecnt:int):
+        self.socket.post_request(ap_index, obj=framecnt, msg="Capture frame count:: {}".format(framecnt))
