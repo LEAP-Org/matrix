@@ -26,7 +26,7 @@ export HOSTNAME=LEAP
 export PASSWORD=leap-ap0
 export PORT=65432
 export SERIAL_PORT=/dev/ttyUSB0
-export PAYLOAD_DIR = payload
+export PAYLOAD_DIR=payload
 export TCS_ENV=dev
 
 echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter dimension to ${OKGREEN}$DIM${ENDC}"
