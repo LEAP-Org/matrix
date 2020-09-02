@@ -28,7 +28,7 @@ class SocketHandler:
     def __init__(self):
         self.log = logging.getLogger(__name__)
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        with EventRegistry as event:
+        with EventRegistry() as event:
             event.register('SHUTDOWN', self.shutdown)
             event.register('POST_REQUEST', self.post_request)
             event.register('GET_REQUEST', self.get_request)
