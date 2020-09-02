@@ -38,7 +38,8 @@ class TestTCSLoggers(unittest.TestCase):
         'tcs.file.file_parser': "tcs/logs/file_parser.log",
         'tcs.tcu.register': "tcs/logs/registry.log",
         'tcs.codec.spatial_codec': "tcs/logs/spatial_codec.log",
-        'tcs.codec.cache': "tcs/logs/cache.log"
+        'tcs.codec.cache': "tcs/logs/cache.log",
+        'tcs.event':"tcs/logs/event.log"
     }
     tcs_config_path = Path("tcs/logs/config/config.yaml")
 
@@ -107,6 +108,14 @@ class TestTCSLoggers(unittest.TestCase):
         """Verify logger for SpatialCodec is functional"""
         log_path = self.log_paths['tcs.codec.spatial_codec']
         log = logging.getLogger('tcs.codec.spatial_codec')
+        ctrl = self.md5(log_path)
+        log.debug("test")
+        assert self.md5(log_path) != ctrl
+
+    def test_e_logger(self):
+        """Verify logger for FileParser is functional"""
+        log_path = self.log_paths['tcs.event']
+        log = logging.getLogger('tcs.event')
         ctrl = self.md5(log_path)
         log.debug("test")
         assert self.md5(log_path) != ctrl
