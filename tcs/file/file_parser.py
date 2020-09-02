@@ -38,7 +38,7 @@ class FileParser:
 
         # save current working directory
         cwd = os.getcwd()
-        os.chdir(Path(__file__).parent.joinpath())
+        os.chdir(Path(__file__).parent.joinpath(payload_dir))
         self.file_list = os.listdir()
         if not self.file_list:
             self.log.error(
@@ -61,7 +61,7 @@ class FileParser:
         # change working directory once path generation complete
         os.chdir(cwd)
         self.file_dir = payload_dir
-        self.cube_dim = os.environ['DIM']
+        self.cube_dim = int(os.environ['DIM'])
         self.log.info("%s successfully instantiated", __name__)
     
     def load(self, ap_index:int):
