@@ -7,6 +7,9 @@ Defines entry point for the transmission software driver
 Copyright © 2020 LEAP. All Rights Reserved.
 """
 import logging
+import os
+import math
+import numpy as np #FIXME
 
 from tcs.tcu.tcu import TransmissionControlUnit
 from tcs.file.file_parser import FileParser
@@ -24,6 +27,12 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+logging.info("Validating environment ...")
+if os.environ['DIM'] < 0 or math.ceil(np.log2(os.environ['DIM'])) != np.log2(os.environ['DIM']):
+    logging.error(
+        "Received unexpected cube dimension size. Cube dimension must be a power of 2.")
+    raise ValueError
+logging.info("{} complete".format(bcolors.OKGREEN + "✓" + bcolors.ENDC))
 logging.info("Starting Access Point Handler ...")
 ApHandler()
 logging.info("{} complete".format(bcolors.OKGREEN + "✓" + bcolors.ENDC))
