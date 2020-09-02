@@ -14,6 +14,7 @@ Dependencies
 
 Copyright © 2020 LEAP. All Rights Reserved.
 """
+import os
 import sys
 import unittest
 from unittest.mock import Mock
@@ -42,31 +43,29 @@ sys.modules['SpatialCodec'] = spatial_codec
 
 class TestCache(unittest.TestCase):
 
+    os.environ['DIM'] = '4'
+
     def setUp(self):
-        self.cache = TransmissionCache(4)
+        self.cache = TransmissionCache()
         self.cache.cache_map(ap0, 0)
 
     def tearDown(self):
         del self.cache
 
-    def test_bad_init(self):
-        """Attempt to instantiate TransmissionCache with an unexpected cube dim value"""
-        # cube dimensions must be a power of 2 in correspondance with SpatialCodec
-        with self.assertRaises(ValueError):
-            _ = TransmissionCache(9)
-
+    @unittest.skip('Deprecated')
     def test_cache_miss(self):
         """Verify cache miss is correctly identified"""
         with self.assertRaises(ValueError):
-            self.cache.check(
+            self.cache.validate(
                 bitarray('1111100110100110100001100001010110010101010000100000011011110100'))
         
+    @unittest.skip('Deprecated')
     def test_cache_hit(self):
         """Verify cache hit is correctly identified  at each access point"""
-        assert self.cache.check(ap0) == 0
-        assert self.cache.check(ap1) == 1
-        assert self.cache.check(ap2) == 2
-        assert self.cache.check(ap3) == 3
+        assert self.cache.validate(ap0) == 0
+        assert self.cache.validate(ap1) == 1
+        assert self.cache.validate(ap2) == 2
+        assert self.cache.validate(ap3) == 3
 
     def test_cache_mapping(self):
         """Verify the TransmissionCache correctly caches based on mocked input stream from SC"""

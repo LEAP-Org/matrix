@@ -9,7 +9,7 @@ loggers:
   '':
     level: 'DEBUG'
     handlers: ['default_handler']
-  tcs.controller.tcu:
+  tcs.tcu.tcu:
     level: 'DEBUG'
     handlers: ['tcu_handler']
     propagate: no
@@ -21,17 +21,21 @@ loggers:
     level: 'DEBUG'
     handlers: ['cache_handler']
     propagate: no
-  tcs.controller.queue_constructor:
+  tcs.tcu.queue_constructor:
     level: 'DEBUG'
     handlers: ['qc_handler']
     propagate: no
-  tcs.controller.register:
+  tcs.tcu.registry:
     level: 'DEBUG'
     handlers: ['register_handler']
     propagate: no
   tcs.codec.spatial_codec:
     level: 'DEBUG'
     handlers: ['sc_handler']
+    propagate: no
+  tcs.event:
+    level: 'DEBUG'
+    handlers: ['e_handler']
     propagate: no
 
 handlers:
@@ -63,12 +67,17 @@ handlers:
   register_handler:
     class: 'logging.FileHandler'
     level: 'DEBUG'
-    filename: tcs/logs/register.log
+    filename: tcs/logs/registry.log
     formatter: default
   sc_handler:
     class: 'logging.FileHandler'
     level: 'DEBUG'
     filename: tcs/logs/spatial_codec.log
+    formatter: default
+  e_handler:
+    class: 'logging.FileHandler'
+    level: 'DEBUG'
+    filename: tcs/logs/event.log
     formatter: default
 
 formatters:

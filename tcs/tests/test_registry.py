@@ -12,18 +12,18 @@ Copyright © 2020 LEAP. All Rights Reserved.
 import unittest
 from unittest import mock
 
-from tcs.controller.queue_constructor import SessionQueue
+from tcs.tcu.queue_constructor import SessionQueue
 
-from tcs.controller.register import ReceiverRegister, RegisterConstants
+from tcs.tcu.registry import APRegistry, RegisterConstants
 
 
-class TestRegister(unittest.TestCase):
+class TestRegistry(unittest.TestCase):
     """
     Testing buisness logic of the receiver register.
     """
 
     # create register object (only allowed one invocation per runtime instance)
-    register = ReceiverRegister()
+    register = APRegistry()
 
     def setUp(self):
         self.mock = mock.MagicMock()
@@ -37,7 +37,7 @@ class TestRegister(unittest.TestCase):
     def test_singleton(self):
         """Try and instantiate duplicate registers in the same runtime environment"""
         with self.assertRaises(RuntimeError):
-            _ = ReceiverRegister()
+            _ = APRegistry()
 
     def test_is_idle(self):
         """Test the idle state method for all register configurations"""
@@ -61,7 +61,7 @@ class TestRegister(unittest.TestCase):
 
     def test_write(self):
         """Test the register writing functionality."""
-        self.register.write(0, [0, 1], ["0101010", "10010101"])
+        self.register.insert(0, [0, 1], ["0101010", "10010101"])
         assert isinstance(self.register.read()[0], SessionQueue)
 
     def test_write_over_max(self):
@@ -73,21 +73,21 @@ class TestRegister(unittest.TestCase):
             for i in range(RegisterConstants.AP_CAPACITY):
                 self.register._sess_reg[i] = self.mock
             with self.assertRaises(MemoryError):
-                self.register.write(3, ["file1.txt", "file2.txt"], ["0101010", "10010101"])
+                self.register.insert(3, ["file1.txt", "file2.txt"], ["0101010", "10010101"])
 
     def test_delete(self):
         """Verify the write() function removes object at index replacing it with NoneType"""
         self.register._sess_reg = [self.mock, self.mock, self.mock, self.mock]
-        self.register.write(3)
+        self.register.remove(3)
         assert self.register.read()[3] is None
-        self.register.write(1)
+        self.register.remove(1)
         assert self.register.read()[1] is None
 
     def test_overwrite(self):
         """Attempt to overwrite active access point session queue obj"""
         self.register._sess_reg = [self.mock, None, None, None]
         with self.assertRaises(IndexError):
-            self.register.write(0, [], [])
+            self.register.insert(0, [], [])
 
 if __name__ == "__main__":
     unittest.main()

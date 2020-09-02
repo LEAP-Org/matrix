@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-LEAP™ Event Handler
+LEAP™ Event Registry
 ===================
 Contributors: Christian Sargusingh
 Modified: 2020-07
@@ -19,18 +19,20 @@ import sys
 import logging.config
 from threading import Thread
 from tcs.event.event import Event
-# from tcs.event.registry import EventRegistry
 
 class EventRegistry:
+    """
+    Visual representation of event registry
+    {   'event_type': {<Event@1082>, <Event@1f4e>, <Event@43ab>}
+        'event_type': {}
+        ... 
+    }
+    """
     
     _event_registry = dict()
 
     def __init__(self):
         self.log = logging.getLogger(__name__)
-        # dictionary of event_types with sets of Events
-        # { 'event_type': {<Event@1082>, <Event@1f4e>, <Event@43ab>}
-        #   'event_type': {}
-        #   ... }
         self.log.info("%s successfully instantiated", __name__)
 
     def __enter__(self):
@@ -56,7 +58,7 @@ class EventRegistry:
 
     def execute(self, event_type: str, *args, **kwargs):
         """
-        Dispatches a new thread to execute all ISR's bound to event_type. This method filters by
+        Dispatches a new thread for each ISR bound to te triggered event_type. This method filters by
         events that are not masked
         :param event_type: execute all isr's bound to this event type
         """
@@ -66,11 +68,9 @@ class EventRegistry:
             self.log.error("Event type does not exist in registry")
         else:
             for event in events:
-                try:
-                    Thread(target=event.isr, args=(*args,), kwargs=kwargs, daemon=True).start()
-                except RuntimeError as exc:
-                    self.log.exception("During a thread dispatch an exception occured: %s", exc)
+                event.isr(args,kwargs)
             self.log.info("Successfully dispatched all events for %s", event_type)
+        self.log.info(self)
 
     def register(self, event_type: str, isr):
         """
@@ -89,4 +89,5 @@ class EventRegistry:
                 # create an empty queue if event type is not in the registry
                 self._event_registry[event_type] = {event}
             self.log.info("Registered event: %s with isr: %s to the registry", event, event.isr)
+        self.log.info(self)
         

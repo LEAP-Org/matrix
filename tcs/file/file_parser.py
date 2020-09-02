@@ -13,10 +13,6 @@ the `TRANSMISSION_FILES_DIR` attribute directory. The file data is iteratively a
 list. Each segment only contains data from one file. Therefore, when transitioning to new files, the
 current segment is padded with null bytes.
  
-Attributes
-----------
- - TRANSMISSION_FILES_DIR (`str`): Defines directory where transmission files are stored.
- 
 Dependencies
 ------------
 >>> import os
@@ -29,31 +25,25 @@ import os
 from pathlib import Path
 
 from bitarray import bitarray
-
-class bcolors:
-    """Class defining escape sequences for terminal color printing"""
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+from tcs.event.registry import EventRegistry
 
 class FileParser:
 
-    def __init__(self, cube_dim: int, directory: str):
+    def __init__(self):
         # instantiate logger and set attributes
         self.log = logging.getLogger(__name__)
+        payload_dir = os.environ['PAYLOAD_DIR']
+        with EventRegistry() as event:
+            event.register('FETCH_PAYLOAD', self.load)
+
         # save current working directory
         cwd = os.getcwd()
-        os.chdir(Path(__file__).parent.joinpath(directory))
+        os.chdir(Path(__file__).parent.joinpath(payload_dir))
         self.file_list = os.listdir()
         if not self.file_list:
             self.log.error(
                 "Failed to instantiate %s. Verify that there are files listed under: %s",
-                __name__, directory)
+                __name__, payload_dir)
             # reset working directory on fail
             os.chdir(cwd)
             raise FileNotFoundError
@@ -70,12 +60,11 @@ class FileParser:
         
         # change working directory once path generation complete
         os.chdir(cwd)
-
-        self.file_dir = directory
-        self.cube_dim = cube_dim
+        self.file_dir = payload_dir
+        self.cube_dim = int(os.environ['DIM'])
         self.log.info("%s successfully instantiated", __name__)
     
-    def load(self):
+    def load(self, ap_index:int):
         """Extracts files under module defined by directory
     
         Args:
@@ -89,8 +78,7 @@ class FileParser:
         - OSError: If length of the path list is 0, or error in opening files specified by file paths
         """
         file_data = list()
-        frame_cnt = list()
-    
+        frame_cnt=list()
         # main loop to extract data from all files under specified directory
         for path in self.f_paths:
             try:
@@ -100,8 +88,10 @@ class FileParser:
                 self.log.exception("Unable to open file: %s", exc)
                 raise OSError from exc
             frame_cnt.append(len(path))
-        
-        return self.file_list, frame_cnt, file_data
+            #TODO: add back framecnt exchange with client
+        with EventRegistry() as event:
+            event.execute('POST_FRAMECNT', ap_index, sum(frame_cnt))
+            event.execute('SESSION_INIT', ap_index, self.file_list, file_data)
     
     def _str_bits(self, string) -> list:
         """Converts a utf-8 string sequence into a series of `bitarray` objects with length of 56.
@@ -129,7 +119,6 @@ class FileParser:
             for _ in range(data_frame_size-remainder):
                 bit_str.append(False)
             frame_queue.append(bit_str)
-        
         return frame_queue
 
     @staticmethod

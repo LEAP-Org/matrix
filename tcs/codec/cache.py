@@ -28,12 +28,13 @@ Dependencies
 Copyright © 2020 LEAP. All Rights Reserved.
 """
 import logging.config
-
+import os
 import bitarray
 import numpy as np
 import math
 
 from tcs.codec.spatial_codec import SpatialCodec
+from tcs.event.registry import EventRegistry
 
 
 class constants:
@@ -62,17 +63,16 @@ class TransmissionCache:
      - `_spatial_codec` (`SpatialCodec`): TCU spatial encoder object
     """
 
-    def __init__(self, cube_dim: int):
+    def __init__(self):
         """Initializes empty list for cached frames and stores a reference to the `SpatialCodec`
         object instantiated by the TCU.
         """
+        cube_dim = int(os.environ['DIM'])
         self.log = logging.getLogger(__name__)
-        if cube_dim < 0 or math.ceil(np.log2(cube_dim)) != np.log2(cube_dim):
-            self.log.error(
-                "Received unexpected cube dimension size. Cube dimension must be a power of 2.")
-            raise ValueError
         self._spatial_codec = SpatialCodec(cube_dim, constants.HM)
         self._cache = list()
+        with EventRegistry() as event:
+            event.register('VALIDATE_APR', self.validate)
         self.log.info("%s successfully instantiated", __name__)
  
     def cache_map(self, bin_frame: bitarray, ap_index: int) -> bitarray:
@@ -105,21 +105,22 @@ class TransmissionCache:
         self._cache.append(cache_entry)
         return encoded_frame
     
-    def check(self, apr: bitarray) -> int:
-        """References `_cache` and compares `apr` code sent by a receiver for access point
-        validation to find a match. If a match is found the function returns the access point where
-        the match is found, otherwise it returns `None`
+    def validate(self, apr: bitarray):
+        """
+        This function is an ISR bound to event:VALIDATE_APR. It references the cache and compares 
+        the apr code sent by a receiver for access point validation to find a match. If a match is 
+        found the APR_VALIDATED event is triggered with the index
 
-        Args:
-            - `apr` (`bitarray`): decoded frame data cached by a receiver during calibration
-        Raises:
-            - ValueError: if apr is not found in cache
-        Returns:
-            - `int`: access point where receiver is located
+        :param apr: decoded frame data cached by a receiver during calibration
+        :returns:
         """
         # FIXME: If cache is a dict based approach the retrieval time is significantly faster
-        for i in range(len(self._cache)):
-            for j in range(len(self._cache[i])):
-                if apr == self._cache[i][j]:
-                    return j
-        raise ValueError
+        with EventRegistry() as event:
+            for i in range(len(self._cache)):
+                for j in range(len(self._cache[i])):
+                    if apr == self._cache[i][j]:
+                        event.execute('APR_VALIDATED', j)
+                        self.log.info("Validated APR key: %s", apr)
+                        return
+            self.log.info("Revoked APR key: %s", apr)
+            event.execute('POST_REQUEST', False, "Access Point Registry invalid. Request declined.")
