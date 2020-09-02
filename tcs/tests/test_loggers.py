@@ -33,10 +33,10 @@ class TestTCSLoggers(unittest.TestCase):
 
     log_paths = {
         '': "tcs/logs/root.log",
-        'tcs.controller.tcu': "tcs/logs/tcu.log",
-        'tcs.controller.queue_constructor': "tcs/logs/queue.log",
+        'tcs.tcu.tcu': "tcs/logs/tcu.log",
+        'tcs.tcu.queue_constructor': "tcs/logs/queue.log",
         'tcs.file.file_parser': "tcs/logs/file_parser.log",
-        'tcs.controller.register': "tcs/logs/register.log",
+        'tcs.tcu.register': "tcs/logs/registry.log",
         'tcs.codec.spatial_codec': "tcs/logs/spatial_codec.log",
         'tcs.codec.cache': "tcs/logs/cache.log"
     }
@@ -81,24 +81,24 @@ class TestTCSLoggers(unittest.TestCase):
 
     def test_qc_logger(self):
         """Verify logger for SessionQueue is functional"""
-        log_path = self.log_paths['tcs.controller.queue_constructor']
-        log = logging.getLogger('tcs.controller.queue_constructor')
+        log_path = self.log_paths['tcs.tcu.queue_constructor']
+        log = logging.getLogger('tcs.tcu.queue_constructor')
         ctrl = self.md5(log_path)
         log.debug("test")
         assert self.md5(log_path) != ctrl
     
     def test_register_logger(self):
         """Verify logger for Register is functional"""
-        log_path = self.log_paths['tcs.controller.register']
-        log = logging.getLogger('tcs.controller.register')
+        log_path = self.log_paths['tcs.tcu.register']
+        log = logging.getLogger('tcs.tcu.register')
         ctrl = self.md5(log_path)
         log.debug("test")
         assert self.md5(log_path) != ctrl
     
     def test_tcu_logger(self):
         """Verify logger for TCU is functional"""
-        log_path = self.log_paths['tcs.controller.tcu']
-        log = logging.getLogger('tcs.controller.tcu')
+        log_path = self.log_paths['tcs.tcu.tcu']
+        log = logging.getLogger('tcs.tcu.tcu')
         ctrl = self.md5(log_path)
         log.debug("test")
         assert self.md5(log_path) != ctrl
