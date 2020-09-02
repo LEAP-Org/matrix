@@ -12,9 +12,9 @@ Copyright © 2020 LEAP. All Rights Reserved.
 import unittest
 from unittest import mock
 
-from tcs.controller.queue_constructor import SessionQueue
+from tcs.tcu.queue_constructor import SessionQueue
 
-from tcs.controller.registry import APRegistry, RegisterConstants
+from tcs.tcu.registry import APRegistry, RegisterConstants
 
 
 class TestRegistry(unittest.TestCase):
