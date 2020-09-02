@@ -36,7 +36,7 @@ class TestTCSLoggers(unittest.TestCase):
         'tcs.tcu.tcu': "tcs/logs/tcu.log",
         'tcs.tcu.queue_constructor': "tcs/logs/queue.log",
         'tcs.file.file_parser': "tcs/logs/file_parser.log",
-        'tcs.tcu.register': "tcs/logs/registry.log",
+        'tcs.tcu.registry': "tcs/logs/registry.log",
         'tcs.codec.spatial_codec': "tcs/logs/spatial_codec.log",
         'tcs.codec.cache': "tcs/logs/cache.log",
         'tcs.event':"tcs/logs/event.log"
@@ -90,8 +90,8 @@ class TestTCSLoggers(unittest.TestCase):
     
     def test_register_logger(self):
         """Verify logger for Register is functional"""
-        log_path = self.log_paths['tcs.tcu.register']
-        log = logging.getLogger('tcs.tcu.register')
+        log_path = self.log_paths['tcs.tcu.registry']
+        log = logging.getLogger('tcs.tcu.registry')
         ctrl = self.md5(log_path)
         log.debug("test")
         assert self.md5(log_path) != ctrl
