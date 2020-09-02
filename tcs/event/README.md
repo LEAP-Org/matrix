@@ -1,6 +1,6 @@
 # Event-Driven Architecture
 
-The system architecture is starting to get closer to the distributed processing model we desire(see issue #61). However as we have more controllers present in the system, we need more modules to have access to bidirectional communication with the MCU. This can be achieved by passing each distributed processor its own copy of the MCU but greatly increases complexity. 
+The system architecture is starting to get closer to the distributed processing model we desire (see issue #61). However as we have more controllers present in the system, we need more modules to have access to bidirectional communication with the MCU. This can be achieved by passing each distributed processor its own copy of the MCU but greatly increases complexity. 
 
 The solution is to implement an event-driven architecture. Events registered by any module and are bound to an Interrupt Service Routine (ISR). When events are executed their ISRs to which they are registered to get called. This means that any module can execute events and trigger method calls within any module to which it is registered. In addition multiple ISRs from different modules can register to the same event. We group these events by event types.
 
@@ -22,7 +22,7 @@ In order to trigger or access members of the `TransmissionControlUnit` the `ApHa
 Here is the same implementation using event-driven architecture:
 First in `tcu.py` `__init__` we would register an event to `tcu.session_init`:
 ```python
-from tcs.event.handler import EventRegistry
+from tcs.event.registry import EventRegistry
 
 class TransmissionControlUnit:
    def __init__(self):
@@ -36,7 +36,7 @@ class TransmissionControlUnit:
 ```
 Then in the `ApHandler` we would simpl make a call to execute the `SESSION_INIT` events which would execute all ISRs that are bound to that event type:
 ```python
-from tcs.event.handler import EventRegistry
+from tcs.event.registry import EventRegistry
 
 class ApHandler:
    def __init__(self):
@@ -49,11 +49,12 @@ class ApHandler:
       ...
 ```
 
-This is way more scalable since as our interactions between modules grow we won't have to change our modules and test cases as a result of these interactions. Instead the events are handled by the event handler and can be scaled without any additional complexity,
+This is way more scalable since as our interactions between modules grow we won't have to change our modules and test cases as a result of these interactions. Instead the events are handled by the event registry and can be scaled without any additional complexity,
 
 ## Best Practices:
 1. Modules can only register events to ISRs that they own.
 2. All event registration should happen during system initialization to avoid events being executed before being registered.
 3. Modules should not contain methods which execute ISRs which are part of the same module.
-4. ISRs must be system endpoints which perform standalone actions and do not have a return value
-5. Events should not be multi-level: ISRs should not execute other ISRs
+4. Ideally, ISRs should be system endpoints which perform standalone actions as they do not support return values. However, if a return value is neccessary a new event can be triggered and the return value can be passed back that way.
+5. Events should be named in all caps and should be a **present tense** short descriptor of the action being requested (ie `VALIDATE_APR`)
+6. Events which broadcast/return a value should be a short descriptor in **past tense** of the action that has been performed (ie `'VALIDATED_APR'`)
