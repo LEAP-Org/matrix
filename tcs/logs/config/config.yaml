@@ -9,7 +9,7 @@ loggers:
   '':
     level: 'DEBUG'
     handlers: ['default_handler']
-  tcs.controller.tcu:
+  tcs.tcu.tcu:
     level: 'DEBUG'
     handlers: ['tcu_handler']
     propagate: no
@@ -21,11 +21,11 @@ loggers:
     level: 'DEBUG'
     handlers: ['cache_handler']
     propagate: no
-  tcs.controller.queue_constructor:
+  tcs.tcu.queue_constructor:
     level: 'DEBUG'
     handlers: ['qc_handler']
     propagate: no
-  tcs.controller.registry:
+  tcs.tcu.registry:
     level: 'DEBUG'
     handlers: ['register_handler']
     propagate: no
