@@ -22,7 +22,7 @@ Copyright © 2020 LEAP. All Rights Reserved.
 """
 
 import logging.config
-from tcs.controller.queue_constructor import SessionQueue
+from tcs.tcu.queue_constructor import SessionQueue
 from tcs.event.registry import EventRegistry
  
 class RegisterConstants:
@@ -59,11 +59,41 @@ class APRegistry:
         APRegistry.__instance = self
         # register session events
         with EventRegistry() as event:
-            event.register('SESSION_INIT', self.insert)
+            event.register('SESSION_INIT', self.session_init)
             event.register('SESSION_END', self.remove)
         self._sess_reg = [None, None, None, None]
         self.log.info("%s successfully instantiated", __name__)
+    
+    def session_init(self, ap_index:int, file_index:int, file_data:list):
+        """This function signals `ReceiverRegister` to create a custom `SessionQueue` object for the
+        receiver file request. After the `SessionQueue` is successfully initialized and stored into
+        the register defined by `ap_index` the `transmission_scheduler()` is called to schedule the
+        transmission events.
  
+        Args:
+         - `ap_index` (`int`): access point registered by connected receiver
+         - `file_index` (`list`): list of indices of file_data that correspond to receiver selection
+ 
+        Raises:
+         - `MemoryError`: if the maximum receiver capacity is reached.
+         - `IndexError`: if a receiver attempts to register at an access point that is connected to
+         by another registered receiver
+         - `ValueError`: if `SessionQueue` object fails to instantiate
+        """
+        
+        try:
+            self.insert(ap_index, file_index, file_data)
+        except MemoryError as exc:
+            self.log.warning("Transmitter capacity reached.")
+        except IndexError as exc:
+            self.log.warning("Receiver already registered at AP: %s", ap_index)
+        except ValueError as exc:
+            self.log.warning("Detected internal error in session instantiation.")
+        # schedule transmission events
+        self.log.info("Session registration and construction successful. Dispatching frames to scheduler.")
+        # TODO: trigger to exec transmission scheduler
+        # self.transmission_scheduler(ap_index)
+
     def read(self) -> list:
         """Reads private session register field.
  

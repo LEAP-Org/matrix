@@ -54,7 +54,7 @@ import threading_sched as sched
 from bitarray import bitarray
 
 from tcs.codec.cache import TransmissionCache
-from tcs.controller.registry import APRegistry
+from tcs.tcu.registry import APRegistry
 from tcs.file.file_parser import FileParser
 
 from tcs.event.registry import EventRegistry
@@ -192,28 +192,7 @@ class TransmissionControlUnit:
             self.log.error(
                 "TCU initialization failed. Specify a valid port number (0 - 65535)")
             raise ValueError
-        
-        # instantiate file_parser
-        payload_dir = "payload"
-        try:
-            self.parser = FileParser(self.cube_dim, payload_dir)
-        except FileNotFoundError as exc:
-            self.log.exception("TCU initialization failed. Directory %s was not found", payload_dir)
-            raise RuntimeError from exc
-        except TypeError as exc:
-            self.log.exception(
-                "TCU initialization failed. Directory %s contains unsupported filetypes",
-                payload_dir)
-            raise RuntimeError from exc
-        try:
-            self.file_list, self.frame_cnt, self._file_data = self.parser.load()
-        except OSError as exc:
-            self.log.exception(
-                "TCU initialization failed. Verify transmission files listed under:%s", payload_dir)
-            raise OSError from exc
-        else:
-            self.log.info("Transmitter payload successfully parsed.")
- 
+
         # initialize arduino serial connection
         try:
             self.ser = serial.Serial(self.transmitter_port,
@@ -225,19 +204,8 @@ class TransmissionControlUnit:
                 self.transmitter_port)
             raise IOError from exc # for clarity
         else:
-            self.log.info("Transmitter serial connection successfully established.")
-        
+            self.log.info("Transmitter serial connection successfully established.") 
         self.log.info("%s successfully instantiated", __name__)
- 
-    def get_attributes(self):
-        """Get method for `socket` interfacing with registered receiver. Returns the private
-        field variables required for the receiver to select the files and so IRIS can schedule the
-        correct number of captures to receive the requested files.
- 
-        Returns:
-         - List object with `file_list` and corresponding `frame_cnt`s
-        """
-        return [self.frame_cnt, self.file_list]
     
     def start(self):
         """Starts transmission scheduler and access point listener thread. Diverts `main` to
@@ -275,38 +243,6 @@ class TransmissionControlUnit:
                     self.log.exception("""Scheduler runner encountered an error while executing the 
                     top level event: %s""", exc)
                     sys.exit(1) # exit with status code 1
- 
-    def session_init(self, ap_index, file_index):
-        """This function signals `ReceiverRegister` to create a custom `SessionQueue` object for the
-        receiver file request. After the `SessionQueue` is successfully initialized and stored into
-        the register defined by `ap_index` the `transmission_scheduler()` is called to schedule the
-        transmission events.
- 
-        Args:
-         - `ap_index` (`int`): access point registered by connected receiver
-         - `file_index` (`list`): list of indices of file_data that correspond to receiver selection
- 
-        Raises:
-         - `MemoryError`: if the maximum receiver capacity is reached.
-         - `IndexError`: if a receiver attempts to register at an access point that is connected to
-         by another registered receiver
-         - `ValueError`: if `SessionQueue` object fails to instantiate
-        """
-        
-        try:
-            self.rec_reg.write(ap_index, file_index, self._file_data)
-        except MemoryError as exc:
-            self.log.warning("Transmitter capacity reached.")
-            raise MemoryError from exc
-        except IndexError as exc:
-            self.log.warning("Receiver already registered at AP: %s", ap_index)
-            raise IndexError from exc
-        except ValueError as exc:
-            self.log.warning("Detected internal error in session instantiation.")
-            raise ValueError from exc
-        # schedule transmission events
-        self.log.info("Session registration and construction successful. Dispatching frames to scheduler.")
-        self.transmission_scheduler(ap_index)
  
     def transmission_scheduler(self, ap_index:int):
         """This function implements the transmitter scheduler policy which provides time-division
