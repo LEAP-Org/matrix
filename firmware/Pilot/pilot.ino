@@ -12,15 +12,15 @@
  * @version --
  */
 
-#define RCLK 14
-#define SRCLK 14
-#define SER 14
+#define RCLK 8
+#define SRCLK 7
+#define SER 4
 
 volatile int srclk = 0;
 volatile int ser_index = 0;
 
 const char *message = "Hello World!";
-bool tx_bits[strlen(message)*8];
+bool tx_bits[12*8];
 
 // Initial setup of the serial port, pins, and optional startup sequence
 void setup() {
@@ -40,7 +40,7 @@ void setup() {
 }
 
 void loop() {
-    
+
 }
 
 void srclk_interrupt() {
