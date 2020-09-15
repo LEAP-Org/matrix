@@ -30,9 +30,10 @@ void setup() {
     for (int byte_index = 0; byte_index < strlen(message); byte_index++) {
         char tx_byte = message[byte_index];
         for (int bit_index = 0; bit_index < 8; bit_index++){
-            tx_bits[(1+bit_index)+(8*byte_index)] = tx_byte & (0x80 >> bit_index);
+            tx_bits[(byte_index*8)+bit_index] = tx_byte & (0x80 >> bit_index);
         }
     }
+    Serial.println("Setup Complete");
 }
 
 void loop() {
@@ -52,9 +53,22 @@ void loop() {
         ser_index = -1;
     }
     delay(1000);
+    // serial_debug();
 }
 
 // void increment_ser_index() {
     
 // }
+
+void serial_debug(){
+    // Serial Monitor Debug 
+    if (ser_index < LEN+1) {
+        ser_index++;
+        if (tx_bits[ser_index] == true) {
+            Serial.print("1");
+        } else {
+            Serial.print("0");
+        }
+    }
+}
  
