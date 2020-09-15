@@ -10,6 +10,7 @@
  * 
  * @author Christian Sargusingh
  * @version --
+ * Copyright © 2020 LEAP. All Rights Reserved.
  */
 
 #define RCLK 8
@@ -40,7 +41,7 @@ void setup() {
 }
 
 void loop() {
-
+    
 }
 
 void srclk_interrupt() {
