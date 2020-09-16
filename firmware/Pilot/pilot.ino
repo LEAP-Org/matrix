@@ -14,12 +14,14 @@
  */
 #include <stdio.h> // for function sprintf
 
-#define RCLK 8
-#define SRCLK 3    // arduino UNO uses pin 2 and 3 as valid ISR pins
-#define SER 4
-#define LEN 32
+#define ROLL 8  // rollover indicator
+#define RCLK 7  // RCLK
+#define SRCLR 9 // shift register clear
+#define SRCLK 3 // arduino UNO uses pin 2 and 3 as valid ISR pins
+#define SER 4   // serial out
+#define LEN 32  // set length of message
 
-volatile int srclk = 0;
+volatile byte srclk = 0;
 volatile int ser_index = -1;
 
 const char *message = "LEAP";
@@ -32,7 +34,8 @@ void setup() {
     pinMode(RCLK, OUTPUT);
     pinMode(SRCLK, INPUT);
     pinMode(SER, OUTPUT);
-    attachInterrupt(digitalPinToInterrupt(SRCLK), srclk_interrupt, RISING);
+    pinMode(SRCLR, OUTPUT);
+    attachInterrupt(digitalPinToInterrupt(SRCLK), srclk_interrupt, FALLING);
     // represent each byte of message in its binary components
     for (int byte_index = 0; byte_index < strlen(message); byte_index++) {
         char tx_byte = message[byte_index];
@@ -40,6 +43,8 @@ void setup() {
             tx_bits[(byte_index*8)+bit_index] = tx_byte & (0x80 >> bit_index);
         }
     }
+    // clear shift register before write cycle begins
+    digitalWrite(SRCLR, HIGH);
     Serial.println("Setup Complete");
 }
 
@@ -53,23 +58,26 @@ void srclk_interrupt() {
     Serial.println("Interrupt Service Routine executing");
     if (ser_index == LEN-1){
         ser_index = -1;
-        digitalWrite(RCLK, HIGH);
-    } else {
-        digitalWrite(RCLK, LOW);
     }
     ser_index++;
     sprintf(format, "Bit Index: %i", ser_index);
-    Serial.println(format);
+    
+    Serial.print(format);
     if (tx_bits[ser_index] == true) {
         digitalWrite(SER, HIGH);
+        Serial.println(" | Writing 1");
     } else {
         digitalWrite(SER, LOW);
+        Serial.println(" | Writing 0");
     }
     if (srclk == 7){
+        digitalWrite(RCLK, HIGH);
         srclk = 0;
     } else {
-        srclk ++;
+        digitalWrite(RCLK, LOW);
     }
+    srclk ++;
+    
 }
 
 void serial_debug(){
