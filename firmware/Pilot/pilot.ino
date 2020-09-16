@@ -51,6 +51,12 @@ void srclk_interrupt() {
     // Each shift clock pulse, set new bit on the serial bus and count up the pulses until the 8th 
     // pulse is received
     Serial.println("Interrupt Service Routine executing");
+    if (ser_index > LEN){
+        ser_index = -1;
+        digitalWrite(RCLK, HIGH);
+    } else {
+        digitalWrite(RCLK, LOW);
+    }
     ser_index++;
     sprintf(format, "Bit Index: %i", ser_index);
     Serial.println(format);
