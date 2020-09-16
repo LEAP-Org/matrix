@@ -12,9 +12,10 @@
  * @version --
  * Copyright © 2020 LEAP. All Rights Reserved.
  */
+#include <stdio.h> // for function sprintf
 
 #define RCLK 8
-#define SRCLK 3
+#define SRCLK 3    // arduino UNO uses pin 2 and 3 as valid ISR pins
 #define SER 4
 #define LEN 32
 
@@ -23,6 +24,7 @@ volatile int ser_index = -1;
 
 const char *message = "LEAP";
 bool tx_bits[LEN];
+char format[16];
 
 // Initial setup of the serial port, pins, and optional startup sequence
 void setup() {
@@ -50,19 +52,18 @@ void srclk_interrupt() {
     // pulse is received
     Serial.println("Interrupt Service Routine executing");
     ser_index++;
+    sprintf(format, "Bit Index: %i", ser_index);
+    Serial.println(format);
     if (tx_bits[ser_index] == true) {
         digitalWrite(SER, HIGH);
     } else {
         digitalWrite(SER, LOW);
     }
     if (srclk == 7){
-        digitalWrite(RCLK, HIGH);
         srclk = 0;
     } else {
         srclk ++;
     }
-    // debouncing
-    delay(100)
 }
 
 void serial_debug(){
