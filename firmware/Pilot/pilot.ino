@@ -14,7 +14,7 @@
  */
 
 #define RCLK 8
-#define SRCLK 7
+#define SRCLK 3
 #define SER 4
 #define LEN 32
 
@@ -48,21 +48,18 @@ void loop() {
 void srclk_interrupt() {
     // Each shift clock pulse, set new bit on the serial bus and count up the pulses until the 8th 
     // pulse is received
-    serial_out();
-    if (srclk == 7){
-        digitalWrite(RCLK, HIGH);
-        srclk = 0;
-    } else {
-        srclk ++;
-    }
-}
-
-void serial_out() {
+    Serial.println("Interrupt Service Routine executing");
     ser_index++;
     if (tx_bits[ser_index] == true) {
         digitalWrite(SER, HIGH);
     } else {
         digitalWrite(SER, LOW);
+    }
+    if (srclk == 7){
+        digitalWrite(RCLK, HIGH);
+        srclk = 0;
+    } else {
+        srclk ++;
     }
 }
 
