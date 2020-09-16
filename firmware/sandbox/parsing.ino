@@ -56,10 +56,6 @@ void loop() {
     // serial_debug();
 }
 
-// void increment_ser_index() {
-    
-// }
-
 void serial_debug(){
     // Serial Monitor Debug 
     if (ser_index < LEN+1) {
