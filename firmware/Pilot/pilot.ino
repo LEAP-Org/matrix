@@ -16,12 +16,13 @@
 #define RCLK 8
 #define SRCLK 7
 #define SER 4
+#define LEN 32
 
 volatile int srclk = 0;
-volatile int ser_index = 0;
+volatile int ser_index = -1;
 
-const char *message = "Hello World!";
-bool tx_bits[12*8];
+const char *message = "LEAP";
+bool tx_bits[LEN];
 
 // Initial setup of the serial port, pins, and optional startup sequence
 void setup() {
@@ -30,14 +31,14 @@ void setup() {
     pinMode(SRCLK, INPUT);
     pinMode(SER, OUTPUT);
     attachInterrupt(digitalPinToInterrupt(SRCLK), srclk_interrupt, RISING);
-
     // represent each byte of message in its binary components
     for (int byte_index = 0; byte_index < strlen(message); byte_index++) {
         char tx_byte = message[byte_index];
         for (int bit_index = 0; bit_index < 8; bit_index++){
-            tx_bits[(1+bit_index)+(8*byte_index)] = tx_byte & (0x80 >> bit_index);
+            tx_bits[(byte_index*8)+bit_index] = tx_byte & (0x80 >> bit_index);
         }
     }
+    Serial.println("Setup Complete");
 }
 
 void loop() {
@@ -49,7 +50,7 @@ void srclk_interrupt() {
     // pulse is received
     serial_out();
     if (srclk == 7){
-        digitalWrite(RCLK, 1);
+        digitalWrite(RCLK, HIGH);
         srclk = 0;
     } else {
         srclk ++;
@@ -57,7 +58,23 @@ void srclk_interrupt() {
 }
 
 void serial_out() {
-    digitalWrite(SER, tx_bits[ser_index]);
     ser_index++;
+    if (tx_bits[ser_index] == true) {
+        digitalWrite(SER, HIGH);
+    } else {
+        digitalWrite(SER, LOW);
+    }
+}
+
+void serial_debug(){
+    // Serial Monitor Debug 
+    if (ser_index < LEN+1) {
+        ser_index++;
+        if (tx_bits[ser_index] == true) {
+            Serial.print("1");
+        } else {
+            Serial.print("0");
+        }
+    }
 }
  
