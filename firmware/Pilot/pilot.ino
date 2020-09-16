@@ -61,6 +61,8 @@ void srclk_interrupt() {
     } else {
         srclk ++;
     }
+    // debouncing
+    delay(100)
 }
 
 void serial_debug(){
