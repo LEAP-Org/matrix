@@ -22,7 +22,7 @@
 #define LEN 32  // set length of message
 
 volatile byte srclk = 0;
-volatile int ser_index = -1;
+volatile int ser_index = 0;
 
 const char *message = "LEAP";
 bool tx_bits[LEN];
@@ -35,7 +35,7 @@ void setup() {
     pinMode(SRCLK, INPUT);
     pinMode(SER, OUTPUT);
     pinMode(SRCLR, OUTPUT);
-    attachInterrupt(digitalPinToInterrupt(SRCLK), update_serin, FALLING);
+    // attachInterrupt(digitalPinToInterrupt(FALLING_CLK), update_serin, FALLING);
     attachInterrupt(digitalPinToInterrupt(SRCLK), rclk_count, RISING);
     // represent each byte of message in its binary components
     for (int byte_index = 0; byte_index < strlen(message); byte_index++) {
@@ -44,9 +44,6 @@ void setup() {
             tx_bits[(byte_index*8)+bit_index] = tx_byte & (0x80 >> bit_index);
         }
     }
-    //load first bit onto the serial bus
-    write_to_bus()
-
     // clear shift register before write cycle begins
     digitalWrite(SRCLR, HIGH);
     Serial.println("Setup Complete");
@@ -56,7 +53,17 @@ void loop() {
     
 }
 
-void write_to_bus(){
+void rclk_count() {
+    // Each shift clock pulse, set new bit on the serial bus and count up the pulses until the 8th 
+    // pulse is received
+    Serial.println("Executing Interrupt Service Routine");
+    // repeat pattern
+    if (ser_index == LEN-1){
+        ser_index = -1;
+    }
+    sprintf(format, "Bit Index: %i", ser_index);
+    Serial.print(format);
+    // write to serial bus
     if (tx_bits[ser_index] == true) {
         digitalWrite(SER, HIGH);
         Serial.println(" | Writing 1");
@@ -65,25 +72,7 @@ void write_to_bus(){
         Serial.println(" | Writing 0");
     }
     ser_index++;
-}
-
-void update_serin() {
-    // On falling edge of clk pulse present the next bit on the serial bus
-    Serial.println("Interrupt Service Routine executing for update_serin()");
-    // if (ser_index == LEN-1){
-    //     ser_index = -1;
-    // }
-    ser_index++;
-    sprintf(format, "Bit Index: %i", ser_index);
-    Serial.print(format);
-    write_to_bus()
-}
-
-void rclk_count() {
-    // Each shift clock pulse, set new bit on the serial bus and count up the pulses until the 8th 
-    // pulse is received
-    Serial.println("Interrupt Service Routine executing for rclk_count()");
-    
+    // check RCLK pulse timing
     if (srclk == 8){
         digitalWrite(RCLK, HIGH);
         srclk = 0;
