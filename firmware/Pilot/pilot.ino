@@ -70,11 +70,11 @@ void srclk_interrupt() {
         digitalWrite(SER, LOW);
         Serial.println(" | Writing 0");
     }
-    if (srclk == 7){
-        digitalWrite(RCLK, HIGH);
-        srclk = 0;
-    } else {
+    if ((srclk & 0x01) == false){
         digitalWrite(RCLK, LOW);
+        // srclk = 0;
+    } else {
+        digitalWrite(RCLK, HIGH);
     }
     srclk ++;
     
