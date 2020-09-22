@@ -58,8 +58,8 @@ void rclk_count() {
     // pulse is received
     Serial.println("Executing Interrupt Service Routine");
     // repeat pattern
-    if (ser_index == LEN-1){
-        ser_index = -1;
+    if (ser_index == 32){
+        ser_index = 0;
     }
     sprintf(format, "Bit Index: %i", ser_index);
     Serial.print(format);
