@@ -63,7 +63,7 @@ class SocketHandler:
             self.log.info("Validating received APR key: %s", apr)
             # APR verification
             with EventRegistry() as event:
-                event.execute('VALIDATE_APR', apr)
+                Thread(target=event.execute, args=('VALIDATE_APR', apr), daemon=True).start()
     
     def register(self, ap_index:int):
         """
