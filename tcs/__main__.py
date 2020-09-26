@@ -28,7 +28,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 logging.info("Validating environment ...")
-if os.environ['DIM'] < 0 or math.ceil(np.log2(os.environ['DIM'])) != np.log2(os.environ['DIM']):
+if int(os.environ['DIM']) < 0 or math.ceil(np.log2(int(os.environ['DIM']))) != np.log2(int(os.environ['DIM'])):
     logging.error(
         "Received unexpected cube dimension size. Cube dimension must be a power of 2.")
     raise ValueError
