@@ -149,17 +149,18 @@ class TransmissionControlUnit:
         self.log.info("Transmission frame intervals set to : %s s", self.transmit_freq)
 
         # initialize arduino serial connection
-        try:
-            self.ser = serial.Serial(self.transmitter_port,
-                                     constants.BAUD_RATE, 
-                                     write_timeout=(self.transmit_freq*constants.CW_RESPONSE_RATIO))
-        except serial.serialutil.SerialException as exc:
-            self.log.exception(
-                "TCU initialization failed. Unable to establish serial connection at port: %s.",
-                self.transmitter_port)
-            raise IOError from exc # for clarity
-        else:
-            self.log.info("Transmitter serial connection successfully established.") 
+        if os.environ['TCS_ENV'] != 'dev':
+            try:
+                self.ser = serial.Serial(self.transmitter_port,
+                                        constants.BAUD_RATE, 
+                                        write_timeout=(self.transmit_freq*constants.CW_RESPONSE_RATIO))
+            except serial.serialutil.SerialException as exc:
+                self.log.exception(
+                    "TCU initialization failed. Unable to establish serial connection at port: %s.",
+                    self.transmitter_port)
+                raise IOError from exc # for clarity
+            else:
+                  self.log.info("Transmitter serial connection successfully established.") 
         self.log.info("%s successfully instantiated", __name__)
         self.scheduler()
  
@@ -227,7 +228,7 @@ class TransmissionControlUnit:
             # and the scheduler filling the queue
             time_sum += self.transmit_freq
             try:
-                # session queue of type bitarray
+                # The 'ion queue of type bitarray
                 sched_args.append(current_sq.next())
             # delete session queue object when the full queue is added to the scheduler
             except ValueError:

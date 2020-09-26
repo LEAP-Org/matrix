@@ -36,17 +36,18 @@ class SocketHandler:
         self.host = os.environ.get('HOSTNAME')
         self.port = int(os.environ.get('PORT'))
         # Uplink socket bind
-        try:
-            self.soc.bind((self.host, self.port))
-        except ConnectionError as exc:
-            # Protect against multiple instances by checking the server port
-            self.log.exception(
-                "TCU initialization failed. Server socket bind encountered a connection error: %s",
-                exc)
-            raise ConnectionError from exc
-        else:
-            self.log.info("Server socket bind successful. Initializing listener thread")
-            Thread(target=self.request_listener, daemon=True).start()
+        if os.environ['TCS_ENV'] != 'dev':
+            try:
+                self.soc.bind((self.host, self.port))
+            except ConnectionError as exc:
+                # Protect against multiple instances by checking the server port
+                self.log.exception(
+                    "TCU initialization failed. Server socket bind encountered a connection error: %s",
+                    exc)
+                raise ConnectionError from exc
+            else:
+                self.log.info("Server socket bind successful. Initializing listener thread")
+                Thread(target=self.request_listener, daemon=True).start()
         self.log.info("%s successfully instantiated", __name__)
 
     def request_listener(self):
