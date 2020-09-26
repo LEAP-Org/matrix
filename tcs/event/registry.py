@@ -69,8 +69,7 @@ class EventRegistry:
         else:
             for event in events:
                 event.isr(args,kwargs)
-            self.log.info("Successfully dispatched all events for %s", event_type)
-        self.log.info(self)
+            self.log.info("Successfully dispatched all events in %s events", event_type)
 
     def register(self, event_type: str, isr):
         """
