@@ -24,13 +24,10 @@ void setup() {
 void loop() {
     byte c;
     digitalWrite(SS, LOW); // enable chip select
-    Serial.println("Writing to ICSP using SPI port");
     for (const char * p = "LEAP"; c = *p; p++){
         SPI.transfer(c);
-        delay(100);
+        delay(2000);
     }
-    Serial.println("Transfer complete");
     digitalWrite(SS, HIGH); // enable chip select
-    delay(1000);
 }
  
