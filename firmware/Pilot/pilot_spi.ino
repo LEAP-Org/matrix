@@ -15,6 +15,7 @@
 // Initial setup of the serial port, pins, and optional startup sequence
 void setup() {
     Serial.begin(9600);
+    // Note SS is Digital pin 11 on UNO R3
     digitalWrite(SS, HIGH); // enforce SS stays high
     SPI.begin();
     Serial.println("Setup Complete");
@@ -26,6 +27,7 @@ void loop() {
     Serial.println("Writing to ICSP using SPI port");
     for (const char * p = "LEAP"; c = *p; p++){
         SPI.transfer(c);
+        delay(100);
     }
     Serial.println("Transfer complete");
     digitalWrite(SS, HIGH); // enable chip select
