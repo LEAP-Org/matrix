@@ -24,10 +24,10 @@ void setup() {
 void loop() {
     byte c;
     digitalWrite(SS, LOW); // enable chip select
-    for (const char * p = "LEAP"; c = *p; p++){
+    for (const char * p = "FH"; c = *p; p++){
         SPI.transfer(c);
         delay(2000);
     }
     digitalWrite(SS, HIGH); // enable chip select
+    
 }
- 
