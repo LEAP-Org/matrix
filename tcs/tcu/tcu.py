@@ -41,22 +41,21 @@ Copyright © 2020 LEAP. All Rights Reserved.
 """
 import binascii
 import logging.config
-import math
 import random
 import sys
 import time
 import os
 
-import numpy as np
 import serial
 import tabulate
 import threading_sched as sched
-from threading import Thread
 from bitarray import bitarray
 
 from tcs.codec.cache import TransmissionCache
 from tcs.tcu.registry import APRegistry
 from tcs.file.file_parser import FileParser
+
+from pynput.keyboard import Key, Listener
 
 from tcs.event.registry import EventRegistry
  
@@ -143,7 +142,7 @@ class TransmissionControlUnit:
  
         # Threading initializations
         # daemon threads declared for simultaneous shutdown of all threads
-        self.sched_thread = Thread(target=self.scheduler,daemon=True)
+        # self.sched_thread = Thread(target=self.scheduler,daemon=True)
 
         self.transmit_freq = 1/self.transmit_freq # convert to seconds
         self.log.info("Transmission frame intervals set to : %s s", self.transmit_freq)
@@ -161,7 +160,10 @@ class TransmissionControlUnit:
         else:
             self.log.info("Transmitter serial connection successfully established.") 
         self.log.info("%s successfully instantiated", __name__)
-        self.scheduler()
+        if os.environ['TCS_ENV'] == 'demo':
+            self.key_listener()
+        else:
+            self.scheduler()
  
     def shutdown(self):
         """
@@ -172,6 +174,24 @@ class TransmissionControlUnit:
         self.log.info("done")
         self.log.info("Exiting...")
         sys.exit()
+
+    def on_press(self, key):
+        print(type(key))
+        if str(key) == "'q'":
+            return False
+        char = str(key).replace('\'', '')
+        print('Encoding: {}'.format(char))
+        self.ser.write(bytes(char, 'ascii'))
+
+    def key_listener(self):
+        """
+        Listen for keypress and send to serial monitor
+        """
+        print("LEAP text encoding:")
+        while True:
+            # Collect events until released
+            with Listener(on_press=self.on_press) as listener:
+                listener.join()
 
     def scheduler(self):
         """This function schedules transmission events with random frame data while the queue is

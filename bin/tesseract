@@ -22,12 +22,12 @@ echo -e "Updated: ${OKBLUE}2020-08${ENDC}\n"
 echo "Setting up environment ..."
 export DIM=4
 export T_FREQ=30
-export HOSTNAME=LEAP
+export HOSTNAME=localhost
 export PASSWORD=leap-ap0
 export PORT=65432
-export SERIAL_PORT=/dev/ttyUSB0
+export SERIAL_PORT=/dev/tty.usbserial-A6024AOD
 export PAYLOAD_DIR=payload
-export TCS_ENV=dev
+export TCS_ENV=demo
 
 echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter dimension to ${OKGREEN}$DIM${ENDC}"
 echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter frequency to ${OKGREEN}$T_FREQ${ENDC}"
