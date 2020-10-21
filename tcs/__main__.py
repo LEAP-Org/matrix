@@ -28,7 +28,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 logging.info("Validating environment ...")
-if os.environ['DIM'] < 0:
+if int(os.environ['DIM']) < 0:
     logging.error(
         "Received unexpected cube dimension size. Cube dimension must be a power of 2.")
     raise ValueError
