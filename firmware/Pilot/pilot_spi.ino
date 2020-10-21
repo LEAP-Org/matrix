@@ -12,23 +12,25 @@
  */
 #include <SPI.h>
 
+// Maximum amount of hex characters that can be stored to convert to binary
+int c = 0; // for incoming serial data
+
 // Initial setup of the serial port, pins, and optional startup sequence
 void setup() {
     Serial.begin(9600);
     // Note SS is Digital pin 11 on UNO R3
     digitalWrite(SS, HIGH); // enforce SS stays high
     SPI.begin();
-    Serial.println("Setup Complete");
 }
 
 void loop() {
-    byte c;
-    SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
-    for (const char * p = "LEAP"; c = *p; p++){
-        digitalWrite(SS, LOW);
-        SPI.transfer(c);
-        digitalWrite(SS, HIGH);
-        delay(10);
+    if (Serial.available() > 0) {
+        c = Serial.read();
     }
+    SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
+    digitalWrite(SS, LOW);
+    SPI.transfer(c);
+    digitalWrite(SS, HIGH);
     SPI.endTransaction();
+    delay(100);
 }
