@@ -27,7 +27,7 @@ export PASSWORD=leap-ap0
 export PORT=65432
 export SERIAL_PORT=/dev/tty.usbserial-A6024AOD
 export PAYLOAD_DIR=payload
-export TCS_ENV=dev
+export TCS_ENV=demo
 
 echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter dimension to ${OKGREEN}$DIM${ENDC}"
 echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter frequency to ${OKGREEN}$T_FREQ${ENDC}"
