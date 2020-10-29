@@ -243,10 +243,10 @@ class TransmissionControlUnit:
          - `IOError`: if during a `Serial.SerialTimeoutException` exception handle a 
          `Serial.SerialException` is raised.
         """
-        ascii_stream = bytes(data, 'ascii')
-        self.log.info('Encoding bytestream: %s to ascii: %s', data, ascii_stream)
+        # ascii_stream = bytes(data, 'ascii')
+        # self.log.info('Encoding bytestream: %s to ascii: %s', data, ascii_stream)
         try:
-            self.ser.write(ascii_stream)
+            self.ser.write(data)
         # Purge scheduler and reboot transmitter
         except serial.SerialTimeoutException as exc:
             self.log.exception("Frame write to transmitter timed out: %s", exc)
