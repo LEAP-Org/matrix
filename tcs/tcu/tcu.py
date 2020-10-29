@@ -55,7 +55,7 @@ from tcs.codec.cache import TransmissionCache
 from tcs.tcu.registry import APRegistry
 from tcs.file.file_parser import FileParser
 
-from pynput.keyboard import Key, Listener
+# from pynput.keyboard import Key, Listener
 
 from tcs.event.registry import EventRegistry
  
@@ -160,8 +160,11 @@ class TransmissionControlUnit:
         else:
             self.log.info("Transmitter serial connection successfully established.") 
         self.log.info("%s successfully instantiated", __name__)
+        # selector for runtime executable
         if os.environ['TCS_ENV'] == 'demo':
             self.key_listener()
+        elif os.environ['TCS_ENV'] == 'server':
+            self.run_server()
         else:
             self.scheduler()
  
@@ -176,22 +179,27 @@ class TransmissionControlUnit:
         sys.exit()
 
     def on_press(self, key):
-        print(type(key))
-        if str(key) == "'q'":
-            return False
-        char = str(key).replace('\'', '')
-        print('Encoding: {}'.format(char))
-        self.ser.write(bytes(char, 'ascii'))
+        # print(type(key))
+        # if str(key) == "'q'":
+        #     return False
+        # char = str(key).replace('\'', '')
+        # print('Encoding: {}'.format(char))
+        # self.ser.write(bytes(char, 'ascii'))
+        pass
 
     def key_listener(self):
         """
         Listen for keypress and send to serial monitor
         """
-        print("LEAP text encoding:")
-        while True:
-            # Collect events until released
-            with Listener(on_press=self.on_press) as listener:
-                listener.join()
+        # print("LEAP text encoding:")
+        # while True:
+        #     # Collect events until released
+        #     with Listener(on_press=self.on_press) as listener:
+        #         listener.join()
+        pass
+
+    def run_server(self):
+        pass
 
     def scheduler(self):
         """This function schedules transmission events with random frame data while the queue is
@@ -223,48 +231,48 @@ class TransmissionControlUnit:
         Args:
          - `ap_index` (`int`): access point registered by connected receiver
         """
-        sched_load = False
-        next_transmission_time = 0
-        current_sq = self.rec_reg.read()[ap_index]
+        # sched_load = False
+        # next_transmission_time = 0
+        # current_sq = self.rec_reg.read()[ap_index]
  
-        for i in range(len(self.sch.queue)):
-            if self.sch.queue[i][1] == 4:
-                sched_load = True
-                next_transmission_time = self.sch.queue[i][0]
-                break
+        # for i in range(len(self.sch.queue)):
+        #     if self.sch.queue[i][1] == 4:
+        #         sched_load = True
+        #         next_transmission_time = self.sch.queue[i][0]
+        #         break
  
-        sched_args = list()
-        time_deadlines = list()
+        # sched_args = list()
+        # time_deadlines = list()
  
-        if sched_load:
-            time_sum = next_transmission_time + self.transmit_freq/2  
-        else:
-            time_sum = time.time()
+        # if sched_load:
+        #     time_sum = next_transmission_time + self.transmit_freq/2  
+        # else:
+        #     time_sum = time.time()
  
-        #prebuild a list of transmission events and times for efficient entry into the scheduler
-        while True:
-            # delay added at start to avoid race between transmit() trying to read from the queue 
-            # and the scheduler filling the queue
-            time_sum += self.transmit_freq
-            try:
-                # session queue of type bitarray
-                sched_args.append(current_sq.next())
-            # delete session queue object when the full queue is added to the scheduler
-            except ValueError:
-                # disconnect signal for transmit
-                time_deadlines.append(time_sum)
-                sched_args.append(None)
-                break
-            time_deadlines.append(time_sum)
+        # #prebuild a list of transmission events and times for efficient entry into the scheduler
+        # while True:
+        #     # delay added at start to avoid race between transmit() trying to read from the queue 
+        #     # and the scheduler filling the queue
+        #     time_sum += self.transmit_freq
+        #     try:
+        #         # session queue of type bitarray
+        #         sched_args.append(current_sq.next())
+        #     # delete session queue object when the full queue is added to the scheduler
+        #     except ValueError:
+        #         # disconnect signal for transmit
+        #         time_deadlines.append(time_sum)
+        #         sched_args.append(None)
+        #         break
+        #     time_deadlines.append(time_sum)
         
-        #enter transmission events into the scheduler
-        for i in enumerate(time_deadlines):
-            self.sch.enterabs(time_deadlines[i], 4, self.transmit, 
-                              argument=(ap_index,sched_args[i]), kwargs={})
-        #print_queue(self.s.queue)
-        self.log.info("Scheduled transmission events for AP: %s", ap_index)
-        self.log.info("Estimated transmission duration (s): %s", 
-            self.sch.queue[len(self.sch.queue)-1][0]-self.sch.queue[0][0])
+        # #enter transmission events into the scheduler
+        # for i in enumerate(time_deadlines):
+        #     self.sch.enterabs(time_deadlines[i], 4, self.transmit, 
+        #                       argument=(ap_index,sched_args[i]), kwargs={})
+        # #print_queue(self.s.queue)
+        # self.log.info("Scheduled transmission events for AP: %s", ap_index)
+        # self.log.info("Estimated transmission duration (s): %s", 
+        #     self.sch.queue[len(self.sch.queue)-1][0]-self.sch.queue[0][0])
 
     # TODO: ConsoleHandler for debug messages
     def transmit(self, ap_index, bin_frame):
@@ -281,32 +289,32 @@ class TransmissionControlUnit:
          - `IOError`: if during a `Serial.SerialTimeoutException` exception handle a 
          `Serial.SerialException` is raised.
         """
-        if os.environ['TCS_ENV'] == 'dev':
-            input("\nDEBUG MESSAGE: Press enter for next frame")
+        # if os.environ['TCS_ENV'] == 'dev':
+        #     input("\nDEBUG MESSAGE: Press enter for next frame")
  
-        # disconnect handle
-        if bin_frame is None:
-            # delete `SessionQueue` instance from `ReceiverRegister`
-            self.rec_reg.write(ap_index)
-        else:
-            hex_code = binascii.hexlify(bin_frame.tobytes())
-            hardware_encode = self.cache.cache_map(bin_frame,ap_index)
-            transmit_hex = binascii.hexlify(hardware_encode.tobytes())
-            print(str(hex_code) + " | To Access Point " + str(ap_index), end='\r')
-            if os.environ['TCS_ENV'] == 'dev':
-                # TODO: Move these prints to cache logger
-                self.log.debug("Binary Frame Data: %s", bin_frame)
-                self.log.debug("Hardware Mapping: %s", hardware_encode)
-                self.log.debug("Decode from AP0: %s", self.cache._cache[-1][0])
-                self.log.debug("Decode from AP1: %s", self.cache._cache[-1][1])
-                self.log.debug("Decode from AP2: %s", self.cache._cache[-1][2])
-                self.log.debug("Decode from AP3: %s", self.cache._cache[-1][3])
+        # # disconnect handle
+        # if bin_frame is None:
+        #     # delete `SessionQueue` instance from `ReceiverRegister`
+        #     self.rec_reg.write(ap_index)
+        # else:
+        #     hex_code = binascii.hexlify(bin_frame.tobytes())
+        #     hardware_encode = self.cache.cache_map(bin_frame,ap_index)
+        #     transmit_hex = binascii.hexlify(hardware_encode.tobytes())
+        #     print(str(hex_code) + " | To Access Point " + str(ap_index), end='\r')
+        #     if os.environ['TCS_ENV'] == 'dev':
+        #         # TODO: Move these prints to cache logger
+        #         self.log.debug("Binary Frame Data: %s", bin_frame)
+        #         self.log.debug("Hardware Mapping: %s", hardware_encode)
+        #         self.log.debug("Decode from AP0: %s", self.cache._cache[-1][0])
+        #         self.log.debug("Decode from AP1: %s", self.cache._cache[-1][1])
+        #         self.log.debug("Decode from AP2: %s", self.cache._cache[-1][2])
+        #         self.log.debug("Decode from AP3: %s", self.cache._cache[-1][3])
 
-            try:
-                self.ser.write(transmit_hex)
-            # Purge scheduler and reboot transmitter
-            except serial.SerialTimeoutException as exc:
-                self.log.exception("Frame write to transmitter timed out: %s", exc)
+        #     try:
+        #         self.ser.write(transmit_hex)
+        #     # Purge scheduler and reboot transmitter
+        #     except serial.SerialTimeoutException as exc:
+        #         self.log.exception("Frame write to transmitter timed out: %s", exc)
                 
     def kill_all(self):
         """
