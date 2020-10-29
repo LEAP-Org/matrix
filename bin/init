@@ -3,9 +3,7 @@
 set -e
 
 # install deb packages
-xargs -a dependancies.txt sudo snap install
-# install pip for python3
-sudo apt install python3-pip
+xargs -a dependancies.txt sudo apt install -y
 # install dependancies
 python3 -m pip install --upgrade pip
-if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
+python3 -m pip install -r requirements.txt
