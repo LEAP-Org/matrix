@@ -172,7 +172,7 @@ class TransmissionControlUnit:
         if os.environ['TCS_ENV'] == 'demo':
             self.key_listener()
         elif os.environ['TCS_ENV'] == 'server':
-            self.run_server()
+            self.ap_handler.run_server()
         else:
             self.scheduler()
  
@@ -205,9 +205,7 @@ class TransmissionControlUnit:
         #     with Listener(on_press=self.on_press) as listener:
         #         listener.join()
         pass
-
-    def run_server(self):
-        pass
+        
 
     def scheduler(self):
         """This function schedules transmission events with random frame data while the queue is
