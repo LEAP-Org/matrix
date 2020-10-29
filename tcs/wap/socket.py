@@ -28,14 +28,14 @@ class SocketHandler:
     def __init__(self):
         self.log = logging.getLogger(__name__)
         
-        with EventRegistry() as event:
-            event.register('SHUTDOWN', self.shutdown)
-            event.register('POST_REQUEST', self.post_request)
-            event.register('GET_REQUEST', self.get_request)
+        # with EventRegistry() as event:
+        #     event.register('SHUTDOWN', self.shutdown)
+        #     event.register('POST_REQUEST', self.post_request)
+        #     event.register('GET_REQUEST', self.get_request)
         # Thread(target=self.request_listener, daemon=True).start()
         self.log.info("%s successfully instantiated", __name__)
 
-    def request_listener(self):
+    def request_listener(self) -> bytes:
         """
         """
         hostname = os.environ.get('HOSTNAME')
@@ -53,6 +53,7 @@ class SocketHandler:
                 self.log.info("Waiting for receiver request on port %s", port)
                 soc.listen()
                 conn, addr = soc.accept()
+                self.log.info("Connected by device at: %s", addr)
                 with conn:
                     print('Connected by', addr)
                     while True:
@@ -60,13 +61,14 @@ class SocketHandler:
                         if not data:
                             break
                         conn.sendall(data)
-                self.log.info("Connected by device at: %s", addr)
                 # make unauthenticated request to get apr key
                 # apr = self.get_request()
                 # self.log.info("Validating received APR key: %s", apr)
                 # # APR verification
                 # with EventRegistry() as event:
                 #     event.execute('VALIDATE_APR', apr)
+        return data
+                
     
     def register(self, ap_index:int):
         """
