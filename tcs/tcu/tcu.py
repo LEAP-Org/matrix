@@ -54,6 +54,7 @@ from bitarray import bitarray
 from tcs.codec.cache import TransmissionCache
 from tcs.tcu.registry import APRegistry
 from tcs.file.file_parser import FileParser
+from tcs.wap.ap_handler import ApHandler
 
 # from pynput.keyboard import Key, Listener
 
@@ -146,6 +147,13 @@ class TransmissionControlUnit:
 
         self.transmit_freq = 1/self.transmit_freq # convert to seconds
         self.log.info("Transmission frame intervals set to : %s s", self.transmit_freq)
+
+        # initialize socket
+        try:
+            self.ap_handler = ApHandler()
+        except ConnectionError as exc:
+            self.log.exception("Socket initialization encountered an exception: %s", exc)
+            raise ConnectionError from exc
 
         # initialize arduino serial connection
         try:
