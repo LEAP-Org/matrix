@@ -38,6 +38,7 @@ class SocketHandler:
     def request_listener(self) -> bytes:
         """
         """
+        recv = None
         hostname = os.environ.get('HOSTNAME')
         port = int(os.environ.get('PORT'))
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as soc:
@@ -61,13 +62,14 @@ class SocketHandler:
                         if not data:
                             break
                         conn.sendall(data)
+                        recv = data
                 # make unauthenticated request to get apr key
                 # apr = self.get_request()
                 # self.log.info("Validating received APR key: %s", apr)
                 # # APR verification
                 # with EventRegistry() as event:
                 #     event.execute('VALIDATE_APR', apr)
-        return data
+        return recv
                 
     
     def register(self, ap_index:int):
