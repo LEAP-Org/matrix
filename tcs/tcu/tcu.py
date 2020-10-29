@@ -69,60 +69,7 @@ class constants:
  
 
 class TransmissionControlUnit:
-    """Class `TransmissionControlUnit` (TCU) provides the fundamental transmission control
-    sequencing and interfacing between all modules within the TCS package. On initialization the TCU
-    parses all transmission files boots the arduino microcontroller by initializing the `pyserial` 
-    object, instantiates `Cache`, `SpatialCodec`, `socket`, `ReceiverRegister` and scaled 
-    transmission scheduler objects. User parameters are validated and raise the appropriate
-    exception otherwise. Upon startup TCU launches 2 primary threads. First, the access point 
-    listener thread `apl_thread` listens over the `socket` for a connection request at a well-known
-    port and IP address. Second, the scaled scheduler thread `sched_thread` prints random frame data
-    while the scheduler has an empty queue. When transmission events are scheduled it executes them
-    with precedence at the requested time.
- 
-    When a receiver connects it wakes the `apl_thread` and receives an APR validation key from the 
-    client for validation. The TCU calls the `Cache` to validate the APR key against its contents.
-    In the event of a match to an access point the `apl_thread` provides the files on the
-    transmitter over the socket for the user to choose from. The file selections are sent back over
-    the socket and a custom `SessionQueue` object with the frame list is instantiated by 
-    `ReceiverRegister` class instance `rec_reg` and stored in the corresponding access point index. 
-    Next the `transmission_scheduler()` function is called to schedule transmission events with the
-    sequential frame data at times determined by a time-division multiplexing algorithm. The 
-    scheduler calls function `transmit()` which uses `Cache` to cache its frame and encode the frame
-    for transmission. The encoded frame data is sent serially to the arduino microcontroller. This
-    is repeated until transmission scheduler is empty and the final frame is sent to the receiver
-    and termination is notified by detection of a null-byte.
- 
-    If during transmission another receiver wakes the apl_thread with an APR validation key
-    (discovered from transmission data encoded for its access point) then the process remains the
-    same except that the transmission scheduler will schedule the second receivers frames
-    interleaved with that of the first. This is done to maintain a constant transmission frequency
-    between both receivers.
- 
-    Attributes:
-     - `cube_dim` (`int`): transmitter cube dimension
-     - `transmit_freq` (`int`): transmitter base frequency in Hz
-     - `port` (`int`): well-known port for `socket` connection
-     - `transmitter_port` (`str`): serial port connected to arduino microcontroller
-     - `debug` (`bool`): toggle for debug mode
-     - `soc` (`Socket`): socket object for remote communication with receiver via wireless network.
-     - `host` (`str`): transmitter host IP address as given by wireless server.
-     - `file_list` (`list`): list of file names as provided in designated files directory
-     - `frame_cnt` (`int`): frame counts of each file as represented by index in `file_list`
-     - `_file_data` (`list`): binary frame divided data dump of all files designated in files dir
-     - `cache` (`Cache`): reference for `Cache` object
-     - `rec_reg` (`ReceiverRegister`): reference for singleton`ReceiverRegister` object
-     - `ser` (`Serial`): reference for `Serial` object connecting arduino microcontroller
-     - `sch` (`scaled_scheduler`): reference for transmitter thread safe `scaled_scheduler` object
-     - `sched_thread` (`Thread`): scheduler daemon thread instantiation
-     - `apl_thread` (`Thread`): access point listener daemon thread instantiation
-    
-    Raises:
-     - `ValueError`: for invalid input parameters for cube_dim, port, and transmit_freq 
-     - `OSError`: for failure to parse files under transmission files directory.s
-     - `RuntimeError`: for `socket` `ConnectionError` or duplicate instantiation of 
-     `ReceiverRegister` object
-     - `IOError`: for `Serial.SerialException` raise by arduino serial monitor
+    """
     """
  
     def __init__(self):
@@ -137,6 +84,7 @@ class TransmissionControlUnit:
         # event registration
         with EventRegistry() as event:
             event.register('SHUTDOWN', self.shutdown)
+            event.register('TRANSMIT', self.transmit)
 
         # define sched object from the threading_sched thread safe module implementation
         self.sch = sched.scaled_scheduler(time.time, time.sleep)
@@ -281,7 +229,7 @@ class TransmissionControlUnit:
         #     self.sch.queue[len(self.sch.queue)-1][0]-self.sch.queue[0][0])
 
     # TODO: ConsoleHandler for debug messages
-    def transmit(self, ap_index, bin_frame):
+    def transmit(self, data):
         """This function encodes binary frame data, adds decoded frames from all access points to 
         cache and converts it to a binary hardware mapping corresponding with arduino hardware map
         as specified by `constants` class. Once the data is encoded it is sent over the serial
@@ -295,9 +243,14 @@ class TransmissionControlUnit:
          - `IOError`: if during a `Serial.SerialTimeoutException` exception handle a 
          `Serial.SerialException` is raised.
         """
-        # if os.environ['TCS_ENV'] == 'dev':
-        #     input("\nDEBUG MESSAGE: Press enter for next frame")
- 
+        ascii_stream = bytes(data, 'ascii')
+        self.log.info('Encoding bytestream: %s to ascii: %s', data, ascii_stream)
+        try:
+            self.ser.write(ascii_stream)
+        # Purge scheduler and reboot transmitter
+        except serial.SerialTimeoutException as exc:
+            self.log.exception("Frame write to transmitter timed out: %s", exc)
+        self.log.info("Successfully wrote %s to tesseract transmitter", data)
         # # disconnect handle
         # if bin_frame is None:
         #     # delete `SessionQueue` instance from `ReceiverRegister`
@@ -315,12 +268,6 @@ class TransmissionControlUnit:
         #         self.log.debug("Decode from AP1: %s", self.cache._cache[-1][1])
         #         self.log.debug("Decode from AP2: %s", self.cache._cache[-1][2])
         #         self.log.debug("Decode from AP3: %s", self.cache._cache[-1][3])
-
-        #     try:
-        #         self.ser.write(transmit_hex)
-        #     # Purge scheduler and reboot transmitter
-        #     except serial.SerialTimeoutException as exc:
-        #         self.log.exception("Frame write to transmitter timed out: %s", exc)
                 
     def kill_all(self):
         """
