@@ -27,7 +27,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 logging.info("Validating runtime context ...")
-if os.environ['TCS_ENV'] not in ('dev', 'demo'):
+if os.environ['TCS_ENV'] not in ('dev', 'demo', 'server'):
     logging.critical("Unexpected runtime context.")
     sys.exit(1)
 if int(os.environ['DIM']) < 0:
