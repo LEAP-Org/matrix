@@ -40,9 +40,7 @@ class SocketHandler:
             self.soc.bind((self.host, self.port))
         except ConnectionError as exc:
             # Protect against multiple instances by checking the server port
-            self.log.exception(
-                "TCU initialization failed. Server socket bind encountered a connection error: %s",
-                exc)
+            self.log.exception("TCU initialization failed. Server socket bind encountered a connection error: %s",exc)
             raise ConnectionError from exc
         else:
             self.log.info("Server socket bind successful. Initializing listener thread")
