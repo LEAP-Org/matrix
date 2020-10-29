@@ -22,9 +22,9 @@ echo -e "Updated: ${OKBLUE}2020-08${ENDC}\n"
 echo "Setting up environment ..."
 export DIM=4
 export T_FREQ=30
-export HOSTNAME=localhost
+export HOSTNAME=$(hostname)
 export PASSWORD=leap-ap0
-export PORT=65432
+export PORT=88
 export SERIAL_PORT=/dev/tty.usbserial-A6024AOD
 export PAYLOAD_DIR=payload
 export TCS_ENV=$1
