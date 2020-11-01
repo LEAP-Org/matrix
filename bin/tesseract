@@ -23,7 +23,7 @@ echo "Setting up environment ..."
 hostname=$(hostname)
 export DIM=4
 export T_FREQ=30
-export HOSTNAME="$(hostname).local"
+export HOSTNAME="$hostname.local"
 export PASSWORD=leap-0000
 export PORT=65432
 export SERIAL_PORT=/dev/ttyUSB0
