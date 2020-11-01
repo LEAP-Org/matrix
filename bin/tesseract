@@ -20,6 +20,7 @@ echo -e "Version: ${OKBLUE}38bb9a56f7b1d7cf1b866e1bb883d81df54b179c @ https://gi
 echo -e "Updated: ${OKBLUE}2020-08${ENDC}\n"
 # setup environment
 echo "Setting up environment ..."
+hostname=$(hostname)
 export DIM=4
 export T_FREQ=30
 export HOSTNAME="$(hostname).local"
