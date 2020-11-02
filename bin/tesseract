@@ -23,10 +23,10 @@ echo "Setting up environment ..."
 hostname=$(hostname)
 export DIM=4
 export T_FREQ=30
-export HOSTNAME="$hostname"
-export PASSWORD=leap-ap0
-export PORT=88
-export SERIAL_PORT=/dev/tty.usbserial-A6024AOD
+export HOSTNAME="$hostname.local"
+export PASSWORD=leap-0000
+export PORT=65432
+export SERIAL_PORT=/dev/ttyUSB0
 export PAYLOAD_DIR=payload
 export TCS_ENV=$1
 
@@ -39,6 +39,9 @@ echo -e "${OKGREEN} ✓ ${ENDC}Set payload directory to ${OKGREEN}$PAYLOAD_DIR${
 echo -e "${OKGREEN} ✓ ${ENDC}Set tcs environment to ${OKGREEN}$TCS_ENV${ENDC}"
 echo -e "${OKGREEN} ✓ ${ENDC}Setup complete "
 echo -e "-----------------------------------\n"
+
+# host ap
+./bin/ap-enable
 
 # tcs entry
 python3 -m tcs
