@@ -36,3 +36,8 @@ flash:
 .PHONY: clean
 clean:
 	@rm -rfv ${BUILD_DIR}
+
+.PHONY: monitor
+monitor: ## ctrl-a + d to exit!
+	@screen /dev/tty.usbserial-A6024AOD
+	# screen -r [pid.]tty.host
