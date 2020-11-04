@@ -21,12 +21,13 @@ echo -e "Updated: ${OKBLUE}2020-08${ENDC}\n"
 # setup environment
 echo "Setting up environment ..."
 hostname=$(hostname)
+tty=$(ls /dev/tty.usbserial*)
 export DIM=4
 export T_FREQ=30
 export HOSTNAME="$hostname.local"
 export PASSWORD=leap-0000
 export PORT=65432
-export SERIAL_PORT=/dev/ttyUSB0
+export SERIAL_PORT=tty
 export PAYLOAD_DIR=payload
 export TCS_ENV=$1
 
