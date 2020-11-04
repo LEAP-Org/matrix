@@ -68,7 +68,7 @@ class EventRegistry:
             self.log.error("Event type does not exist in registry")
         else:
             for event in events:
-                event.isr(args,kwargs)
+                event.isr(*args,**kwargs)
             self.log.info("Successfully dispatched all events for %s", event_type)
         self.log.info(self)
 

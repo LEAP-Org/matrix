@@ -20,14 +20,15 @@ echo -e "Version: ${OKBLUE}38bb9a56f7b1d7cf1b866e1bb883d81df54b179c @ https://gi
 echo -e "Updated: ${OKBLUE}2020-08${ENDC}\n"
 # setup environment
 echo "Setting up environment ..."
+hostname=$(hostname)
 export DIM=4
 export T_FREQ=30
-export HOSTNAME=localhost
-export PASSWORD=leap-ap0
+export HOSTNAME="$hostname.local"
+export PASSWORD=leap-0000
 export PORT=65432
-export SERIAL_PORT=/dev/tty.usbserial-A6024AOD
+export SERIAL_PORT=/dev/ttyUSB0
 export PAYLOAD_DIR=payload
-export TCS_ENV=demo
+export TCS_ENV=$1
 
 echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter dimension to ${OKGREEN}$DIM${ENDC}"
 echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter frequency to ${OKGREEN}$T_FREQ${ENDC}"
@@ -38,6 +39,9 @@ echo -e "${OKGREEN} ✓ ${ENDC}Set payload directory to ${OKGREEN}$PAYLOAD_DIR${
 echo -e "${OKGREEN} ✓ ${ENDC}Set tcs environment to ${OKGREEN}$TCS_ENV${ENDC}"
 echo -e "${OKGREEN} ✓ ${ENDC}Setup complete "
 echo -e "-----------------------------------\n"
+
+# host ap
+./bin/ap-enable
 
 # tcs entry
 python3 -m tcs

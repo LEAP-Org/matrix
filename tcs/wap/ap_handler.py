@@ -39,3 +39,10 @@ class ApHandler:
     
     def post_frame_count(self, ap_index:int, framecnt:int):
         self.socket.post_request(ap_index, obj=framecnt, msg="Capture frame count:: {}".format(framecnt))
+    
+    def run_server(self):
+        bytestream = self.socket.request_listener()
+        self.log.info("Received '%s' from socket", bytestream)
+        with EventRegistry() as event:
+            event.execute('TRANSMIT', bytestream)
+            self.log.info("Executed transmission event")

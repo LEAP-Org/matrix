@@ -40,8 +40,7 @@ loggers:
 
 handlers:
   default_handler:
-    class: 'logging.FileHandler'
-    filename: tcs/logs/root.log
+    class: 'logging.StreamHandler'
     level: 'DEBUG'
     formatter: default
   tcu_handler:

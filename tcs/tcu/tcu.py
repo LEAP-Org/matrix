@@ -54,8 +54,9 @@ from bitarray import bitarray
 from tcs.codec.cache import TransmissionCache
 from tcs.tcu.registry import APRegistry
 from tcs.file.file_parser import FileParser
+from tcs.wap.ap_handler import ApHandler
 
-from pynput.keyboard import Key, Listener
+# from pynput.keyboard import Key, Listener
 
 from tcs.event.registry import EventRegistry
  
@@ -68,60 +69,7 @@ class constants:
  
 
 class TransmissionControlUnit:
-    """Class `TransmissionControlUnit` (TCU) provides the fundamental transmission control
-    sequencing and interfacing between all modules within the TCS package. On initialization the TCU
-    parses all transmission files boots the arduino microcontroller by initializing the `pyserial` 
-    object, instantiates `Cache`, `SpatialCodec`, `socket`, `ReceiverRegister` and scaled 
-    transmission scheduler objects. User parameters are validated and raise the appropriate
-    exception otherwise. Upon startup TCU launches 2 primary threads. First, the access point 
-    listener thread `apl_thread` listens over the `socket` for a connection request at a well-known
-    port and IP address. Second, the scaled scheduler thread `sched_thread` prints random frame data
-    while the scheduler has an empty queue. When transmission events are scheduled it executes them
-    with precedence at the requested time.
- 
-    When a receiver connects it wakes the `apl_thread` and receives an APR validation key from the 
-    client for validation. The TCU calls the `Cache` to validate the APR key against its contents.
-    In the event of a match to an access point the `apl_thread` provides the files on the
-    transmitter over the socket for the user to choose from. The file selections are sent back over
-    the socket and a custom `SessionQueue` object with the frame list is instantiated by 
-    `ReceiverRegister` class instance `rec_reg` and stored in the corresponding access point index. 
-    Next the `transmission_scheduler()` function is called to schedule transmission events with the
-    sequential frame data at times determined by a time-division multiplexing algorithm. The 
-    scheduler calls function `transmit()` which uses `Cache` to cache its frame and encode the frame
-    for transmission. The encoded frame data is sent serially to the arduino microcontroller. This
-    is repeated until transmission scheduler is empty and the final frame is sent to the receiver
-    and termination is notified by detection of a null-byte.
- 
-    If during transmission another receiver wakes the apl_thread with an APR validation key
-    (discovered from transmission data encoded for its access point) then the process remains the
-    same except that the transmission scheduler will schedule the second receivers frames
-    interleaved with that of the first. This is done to maintain a constant transmission frequency
-    between both receivers.
- 
-    Attributes:
-     - `cube_dim` (`int`): transmitter cube dimension
-     - `transmit_freq` (`int`): transmitter base frequency in Hz
-     - `port` (`int`): well-known port for `socket` connection
-     - `transmitter_port` (`str`): serial port connected to arduino microcontroller
-     - `debug` (`bool`): toggle for debug mode
-     - `soc` (`Socket`): socket object for remote communication with receiver via wireless network.
-     - `host` (`str`): transmitter host IP address as given by wireless server.
-     - `file_list` (`list`): list of file names as provided in designated files directory
-     - `frame_cnt` (`int`): frame counts of each file as represented by index in `file_list`
-     - `_file_data` (`list`): binary frame divided data dump of all files designated in files dir
-     - `cache` (`Cache`): reference for `Cache` object
-     - `rec_reg` (`ReceiverRegister`): reference for singleton`ReceiverRegister` object
-     - `ser` (`Serial`): reference for `Serial` object connecting arduino microcontroller
-     - `sch` (`scaled_scheduler`): reference for transmitter thread safe `scaled_scheduler` object
-     - `sched_thread` (`Thread`): scheduler daemon thread instantiation
-     - `apl_thread` (`Thread`): access point listener daemon thread instantiation
-    
-    Raises:
-     - `ValueError`: for invalid input parameters for cube_dim, port, and transmit_freq 
-     - `OSError`: for failure to parse files under transmission files directory.s
-     - `RuntimeError`: for `socket` `ConnectionError` or duplicate instantiation of 
-     `ReceiverRegister` object
-     - `IOError`: for `Serial.SerialException` raise by arduino serial monitor
+    """
     """
  
     def __init__(self):
@@ -136,6 +84,7 @@ class TransmissionControlUnit:
         # event registration
         with EventRegistry() as event:
             event.register('SHUTDOWN', self.shutdown)
+            event.register('TRANSMIT', self.transmit)
 
         # define sched object from the threading_sched thread safe module implementation
         self.sch = sched.scaled_scheduler(time.time, time.sleep)
@@ -146,6 +95,13 @@ class TransmissionControlUnit:
 
         self.transmit_freq = 1/self.transmit_freq # convert to seconds
         self.log.info("Transmission frame intervals set to : %s s", self.transmit_freq)
+
+        # initialize socket
+        try:
+            self.ap_handler = ApHandler()
+        except ConnectionError as exc:
+            self.log.exception("Socket initialization encountered an exception: %s", exc)
+            raise ConnectionError from exc
 
         # initialize arduino serial connection
         try:
@@ -160,8 +116,11 @@ class TransmissionControlUnit:
         else:
             self.log.info("Transmitter serial connection successfully established.") 
         self.log.info("%s successfully instantiated", __name__)
+        # selector for runtime executable
         if os.environ['TCS_ENV'] == 'demo':
             self.key_listener()
+        elif os.environ['TCS_ENV'] == 'server':
+            self.ap_handler.run_server()
         else:
             self.scheduler()
  
@@ -176,22 +135,25 @@ class TransmissionControlUnit:
         sys.exit()
 
     def on_press(self, key):
-        print(type(key))
-        if str(key) == "'q'":
-            return False
-        char = str(key).replace('\'', '')
-        print('Encoding: {}'.format(char))
-        self.ser.write(bytes(char, 'ascii'))
+        # print(type(key))
+        # if str(key) == "'q'":
+        #     return False
+        # char = str(key).replace('\'', '')
+        # print('Encoding: {}'.format(char))
+        # self.ser.write(bytes(char, 'ascii'))
+        pass
 
     def key_listener(self):
         """
         Listen for keypress and send to serial monitor
         """
-        print("LEAP text encoding:")
-        while True:
-            # Collect events until released
-            with Listener(on_press=self.on_press) as listener:
-                listener.join()
+        # print("LEAP text encoding:")
+        # while True:
+        #     # Collect events until released
+        #     with Listener(on_press=self.on_press) as listener:
+        #         listener.join()
+        pass
+        
 
     def scheduler(self):
         """This function schedules transmission events with random frame data while the queue is
@@ -223,51 +185,51 @@ class TransmissionControlUnit:
         Args:
          - `ap_index` (`int`): access point registered by connected receiver
         """
-        sched_load = False
-        next_transmission_time = 0
-        current_sq = self.rec_reg.read()[ap_index]
+        # sched_load = False
+        # next_transmission_time = 0
+        # current_sq = self.rec_reg.read()[ap_index]
  
-        for i in range(len(self.sch.queue)):
-            if self.sch.queue[i][1] == 4:
-                sched_load = True
-                next_transmission_time = self.sch.queue[i][0]
-                break
+        # for i in range(len(self.sch.queue)):
+        #     if self.sch.queue[i][1] == 4:
+        #         sched_load = True
+        #         next_transmission_time = self.sch.queue[i][0]
+        #         break
  
-        sched_args = list()
-        time_deadlines = list()
+        # sched_args = list()
+        # time_deadlines = list()
  
-        if sched_load:
-            time_sum = next_transmission_time + self.transmit_freq/2  
-        else:
-            time_sum = time.time()
+        # if sched_load:
+        #     time_sum = next_transmission_time + self.transmit_freq/2  
+        # else:
+        #     time_sum = time.time()
  
-        #prebuild a list of transmission events and times for efficient entry into the scheduler
-        while True:
-            # delay added at start to avoid race between transmit() trying to read from the queue 
-            # and the scheduler filling the queue
-            time_sum += self.transmit_freq
-            try:
-                # session queue of type bitarray
-                sched_args.append(current_sq.next())
-            # delete session queue object when the full queue is added to the scheduler
-            except ValueError:
-                # disconnect signal for transmit
-                time_deadlines.append(time_sum)
-                sched_args.append(None)
-                break
-            time_deadlines.append(time_sum)
+        # #prebuild a list of transmission events and times for efficient entry into the scheduler
+        # while True:
+        #     # delay added at start to avoid race between transmit() trying to read from the queue 
+        #     # and the scheduler filling the queue
+        #     time_sum += self.transmit_freq
+        #     try:
+        #         # session queue of type bitarray
+        #         sched_args.append(current_sq.next())
+        #     # delete session queue object when the full queue is added to the scheduler
+        #     except ValueError:
+        #         # disconnect signal for transmit
+        #         time_deadlines.append(time_sum)
+        #         sched_args.append(None)
+        #         break
+        #     time_deadlines.append(time_sum)
         
-        #enter transmission events into the scheduler
-        for i in enumerate(time_deadlines):
-            self.sch.enterabs(time_deadlines[i], 4, self.transmit, 
-                              argument=(ap_index,sched_args[i]), kwargs={})
-        #print_queue(self.s.queue)
-        self.log.info("Scheduled transmission events for AP: %s", ap_index)
-        self.log.info("Estimated transmission duration (s): %s", 
-            self.sch.queue[len(self.sch.queue)-1][0]-self.sch.queue[0][0])
+        # #enter transmission events into the scheduler
+        # for i in enumerate(time_deadlines):
+        #     self.sch.enterabs(time_deadlines[i], 4, self.transmit, 
+        #                       argument=(ap_index,sched_args[i]), kwargs={})
+        # #print_queue(self.s.queue)
+        # self.log.info("Scheduled transmission events for AP: %s", ap_index)
+        # self.log.info("Estimated transmission duration (s): %s", 
+        #     self.sch.queue[len(self.sch.queue)-1][0]-self.sch.queue[0][0])
 
     # TODO: ConsoleHandler for debug messages
-    def transmit(self, ap_index, bin_frame):
+    def transmit(self, data):
         """This function encodes binary frame data, adds decoded frames from all access points to 
         cache and converts it to a binary hardware mapping corresponding with arduino hardware map
         as specified by `constants` class. Once the data is encoded it is sent over the serial
@@ -281,32 +243,31 @@ class TransmissionControlUnit:
          - `IOError`: if during a `Serial.SerialTimeoutException` exception handle a 
          `Serial.SerialException` is raised.
         """
-        if os.environ['TCS_ENV'] == 'dev':
-            input("\nDEBUG MESSAGE: Press enter for next frame")
- 
-        # disconnect handle
-        if bin_frame is None:
-            # delete `SessionQueue` instance from `ReceiverRegister`
-            self.rec_reg.write(ap_index)
-        else:
-            hex_code = binascii.hexlify(bin_frame.tobytes())
-            hardware_encode = self.cache.cache_map(bin_frame,ap_index)
-            transmit_hex = binascii.hexlify(hardware_encode.tobytes())
-            print(str(hex_code) + " | To Access Point " + str(ap_index), end='\r')
-            if os.environ['TCS_ENV'] == 'dev':
-                # TODO: Move these prints to cache logger
-                self.log.debug("Binary Frame Data: %s", bin_frame)
-                self.log.debug("Hardware Mapping: %s", hardware_encode)
-                self.log.debug("Decode from AP0: %s", self.cache._cache[-1][0])
-                self.log.debug("Decode from AP1: %s", self.cache._cache[-1][1])
-                self.log.debug("Decode from AP2: %s", self.cache._cache[-1][2])
-                self.log.debug("Decode from AP3: %s", self.cache._cache[-1][3])
-
-            try:
-                self.ser.write(transmit_hex)
-            # Purge scheduler and reboot transmitter
-            except serial.SerialTimeoutException as exc:
-                self.log.exception("Frame write to transmitter timed out: %s", exc)
+        # ascii_stream = bytes(data, 'ascii')
+        # self.log.info('Encoding bytestream: %s to ascii: %s', data, ascii_stream)
+        try:
+            self.ser.write(data)
+        # Purge scheduler and reboot transmitter
+        except serial.SerialTimeoutException as exc:
+            self.log.exception("Frame write to transmitter timed out: %s", exc)
+        self.log.info("Successfully wrote %s to tesseract transmitter", data)
+        # # disconnect handle
+        # if bin_frame is None:
+        #     # delete `SessionQueue` instance from `ReceiverRegister`
+        #     self.rec_reg.write(ap_index)
+        # else:
+        #     hex_code = binascii.hexlify(bin_frame.tobytes())
+        #     hardware_encode = self.cache.cache_map(bin_frame,ap_index)
+        #     transmit_hex = binascii.hexlify(hardware_encode.tobytes())
+        #     print(str(hex_code) + " | To Access Point " + str(ap_index), end='\r')
+        #     if os.environ['TCS_ENV'] == 'dev':
+        #         # TODO: Move these prints to cache logger
+        #         self.log.debug("Binary Frame Data: %s", bin_frame)
+        #         self.log.debug("Hardware Mapping: %s", hardware_encode)
+        #         self.log.debug("Decode from AP0: %s", self.cache._cache[-1][0])
+        #         self.log.debug("Decode from AP1: %s", self.cache._cache[-1][1])
+        #         self.log.debug("Decode from AP2: %s", self.cache._cache[-1][2])
+        #         self.log.debug("Decode from AP3: %s", self.cache._cache[-1][3])
                 
     def kill_all(self):
         """

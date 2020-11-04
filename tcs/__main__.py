@@ -8,8 +8,7 @@ Copyright © 2020 LEAP. All Rights Reserved.
 """
 import logging
 import os
-import math
-import numpy as np #FIXME
+import sys
 
 from tcs.tcu.tcu import TransmissionControlUnit
 from tcs.file.file_parser import FileParser
@@ -27,11 +26,14 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-logging.info("Validating environment ...")
+logging.info("Validating runtime context ...")
+if os.environ['TCS_ENV'] not in ('dev', 'demo', 'server'):
+    logging.critical("Unexpected runtime context.")
+    sys.exit(1)
 if int(os.environ['DIM']) < 0:
-    logging.error(
-        "Received unexpected cube dimension size. Cube dimension must be a power of 2.")
-    raise ValueError
+    logging.error("Received unexpected cube dimension size. Cube dimension must be a power of 2.")
+    sys.exit(1)
+
 logging.info("{} complete".format(bcolors.OKGREEN + "✓" + bcolors.ENDC))
 logging.info("Starting Access Point Handler ...")
 ApHandler()
