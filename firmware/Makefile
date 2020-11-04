@@ -31,7 +31,7 @@ setup:
 	@arduino-cli config init;
 	@arduino-cli core update-index;
 	@arduino-cli core install arduino:avr;
-	@arduino-cli core upgrade
+	@arduino-cli core upgrade;
 	@arduino-cli core list;
 	@arduino-cli board listall;
 
@@ -44,16 +44,18 @@ compile:
 .PHONY: flash
 flash:
 	@printf "${OKBLUE}Flashing ${BUILD_DIR}${CORE} to ${TTY}${NC}\n"
-	@arduino-cli upload -v -p ${TTY} --fqbn ${CORE} ${SRC_DIR}
+	@if [[ -z "$(lsof /dev/tty.usbserial*)" ]]; then \
+		kill $$(lsof /dev/tty.usbserial* | awk 'NR>1 {print $2}'); fi;
+	@arduino-cli upload -v -p ${TTY} --fqbn ${CORE} ${SRC_DIR};
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
 .PHONY: clean
 clean:
-	@printf "${OKBLUE}Cleaning build artefacts: ${BUILD_DIR}${NC}\n"
-	@rm -rfv ${BUILD_DIR}
+	@printf "${OKBLUE}Cleaning build artefacts: ${BUILD_DIR}${NC}\n";
+	@rm -rfv ${BUILD_DIR};
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
 .PHONY: monitor
-monitor: ## ctrl-a + d to exit!
+monitor: ## Open serial port using tty. Ctrl-a + d to exit screen
 	@screen ${TTY}
-	# screen -r [pid.]tty.host
+	# to reconnnect to serial monitor: screen -r [pid.]tty.host
