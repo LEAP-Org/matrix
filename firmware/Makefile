@@ -8,6 +8,8 @@ NC=\033[0m
 SRC_DIR=src
 BUILD_DIR=src/build/
 CORE=arduino:avr:uno
+# scrape serial port from /dev
+TTY=$$(ls /dev/tty.usbserial*)
 
 
 .PHONY: help	
@@ -41,9 +43,8 @@ compile:
 
 .PHONY: flash
 flash:
-	# scrape port from /dev
-	@printf "${OKBLUE}Flashing ${BUILD_DIR}${CORE}${NC} to /dev/tty.usbserial-A6024AOD\n"
-	@arduino-cli upload -v -p /dev/tty.usbserial-A6024AOD --fqbn ${CORE} ${SRC_DIR}
+	@printf "${OKBLUE}Flashing ${BUILD_DIR}${CORE} to ${TTY}${NC}\n"
+	@arduino-cli upload -v -p ${TTY} --fqbn ${CORE} ${SRC_DIR}
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
 .PHONY: clean
@@ -54,5 +55,5 @@ clean:
 
 .PHONY: monitor
 monitor: ## ctrl-a + d to exit!
-	@screen /dev/tty.usbserial-A6024AOD
+	@screen ${TTY}
 	# screen -r [pid.]tty.host
