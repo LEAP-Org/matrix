@@ -8,7 +8,7 @@ __pycache__/
 .vscode/
 
 # c compiler build folder
-firmware/build/
+firmware/src/build/
 
 # log output
 *.log
