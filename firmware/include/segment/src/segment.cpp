@@ -8,7 +8,8 @@
 #include <Arduino.h>
 #include "src/segment.h"
 
-Segment::Segment(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, int pin7, boolean msb) {
+Segment::Segment(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, \
+    int pin7, boolean msb) {
     // implementation for the KER 5621 BSR module
     // pulled low to enable LED segment
     if (msb == true) {
