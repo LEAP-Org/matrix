@@ -1,14 +1,13 @@
 /*
- * main.ino
- * 
- * 8-Bit Development Tesseract Software Driver.
- * 
- * Pilot SPI uses the SPI interface to facilitate high speed serial data transfer to the tesseract
- * shift register. https://arduino.stackexchange.com/questions/16348/how-do-you-use-spi-on-an-arduino
- * 
- * @author Christian Sargusingh
- * @version --
- * Copyright © 2020 LEAP. All Rights Reserved.
+8-Bit Pilot Tesseract Firmware
+==============================
+
+Pilot SPI uses the SPI interface to facilitate high speed serial data transfer to the tesseract
+shift register. https://arduino.stackexchange.com/questions/16348/how-do-you-use-spi-on-an-arduino
+
+Modified: 2020-11
+Author: Christian Sargusingh
+Copyright © 2020 LEAP. All Rights Reserved.
  */
 #include <SPI.h>
 #include <Segment.h>
