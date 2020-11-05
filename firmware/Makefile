@@ -1,3 +1,10 @@
+# Makefile for Arduino Interfacing
+# ================================
+# 
+# 
+# Modified: 2020-11
+# Copyright 2020 Christian Sargusingh
+
 OKGREEN=\033[92m
 # WARNING=\033[93m
 # FAIL=\033[91m
@@ -11,6 +18,7 @@ CORE=arduino:avr:uno
 # scrape serial port from /dev
 TTY=$$(ls /dev/tty.usbserial*)
 
+kill_serial := $$(kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'))
 
 .PHONY: help	
 help:
@@ -45,8 +53,8 @@ compile:
 flash:
 	@printf "${OKBLUE}Flashing ${BUILD_DIR}${CORE} to ${TTY}${NC}\n"
 	@if [[ -n "$$(lsof ${TTY})" ]]; then \
-		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n"; \
-		kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'); fi;
+		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n" \
+		$(call kill_serial); fi;
 	@arduino-cli upload -v -p ${TTY} --fqbn ${CORE} ${SRC_DIR};
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
@@ -55,8 +63,8 @@ clean:
 	@printf "${OKBLUE}Cleaning build artefacts: ${BUILD_DIR}${NC}\n";
 	@rm -rfv ${BUILD_DIR};
 	@if [[ -n "$$(lsof ${TTY})" ]]; then \
-		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n"; \
-		kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'); fi;
+		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n" \
+		$(call kill_serial); fi;
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
 .PHONY: monitor
