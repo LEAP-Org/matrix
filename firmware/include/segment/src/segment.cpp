@@ -6,7 +6,7 @@
 */
 
 #include <Arduino.h>
-#include "src/segment.h"
+#include "Segment.h"
 
 Segment::Segment(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6, \
     int pin7, boolean msb) {

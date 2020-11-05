@@ -1,17 +1,21 @@
-/*
-8-Bit Pilot Tesseract Firmware
-==============================
-
-Pilot SPI uses the SPI interface to facilitate high speed serial data transfer to the tesseract
-shift register. https://arduino.stackexchange.com/questions/16348/how-do-you-use-spi-on-an-arduino
-
-Modified: 2020-11
-Author: Christian Sargusingh
-Copyright © 2020 LEAP. All Rights Reserved.
+// -*- lsst-c++ -*-
+/**
+ * LEAP Systems
+ * See COPYRIGHT file at the top of the source tree.
+ * Copyright © 2020 LEAP. All Rights Reserved.
+ * 
+ * @file main.ino
+ *
+ * @brief Pilot system uses SPI interface to facilitate high speed serial data 
+ * transfer to the tesseract shift register. See: 
+ * https://arduino.stackexchange.com/questions/16348/how-do-you-use-spi-on-an-arduino
+ *
+ * @author Christian Sargusingh
+ * Contact: christian@leapsystems.online
  */
 #include <SPI.h>
-#include <Segment.h>
 #include <SoftwareSerial.h>
+#include <Segment.h>
 
 // Maximum amount of hex characters that can be stored to convert to binary
 
@@ -37,7 +41,7 @@ void loop() {
         } else {
             msb = c >> 4;
             lsb = c & 0x0F;
-            Serial.prit("Received: ");
+            Serial.print("Received: ");
             Serial.println(c, HEX);
             Serial.println(msb, HEX);
             Serial.println(lsb, HEX);
