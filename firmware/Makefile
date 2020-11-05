@@ -38,7 +38,7 @@ help:
 all: lint compile flash
 
 .PHONY: setup
-setup:
+setup: ## configure arduino-cli and install cpplinter
 	@arduino-cli config init;
 	@arduino-cli core update-index;
 	@arduino-cli core install arduino:avr;
