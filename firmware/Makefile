@@ -1,9 +1,10 @@
 # Makefile for Arduino Interfacing
 # ================================
-# Make file for linting, compiling, flashing and interfacing with the arduino serial monitor
+# Makefile for linting, compiling, flashing larger scale ardunio projects and
+# interfacing with the arduino serial monitor
 # 
 # Modified: 2020-11
-# Copyright 2020 Christian Sargusingh
+# Copyright © 2020 Christian Sargusingh
 
 OKGREEN=\033[92m
 # WARNING=\033[93m
@@ -13,18 +14,26 @@ UNDERLINE=\033[4m
 NC=\033[0m
 
 # User Env flags
-INCLUDE_DIR=include 	# include files
-SRC_DIR=src 			# src files 
-BUILD_DIR=src/build/	# build directory
-CORE=arduino:avr:uno	# build core (ref arduino-cli)
+# include files
+INCLUDE_DIR=include
+# src files
+SRC_DIR=src
+# build directory
+BUILD_DIR=src/build/
+# build core (ref arduino-cli)
+CORE=arduino:avr:uno
 LINT_EXT=ino,h,cpp
 # scrape serial port from /dev
 # TODO: scrape using `arduino-cli board list` (requires FBQN resolvers)
 TTY := $$(ls /dev/tty.usbserial*)
 kill_serial := $$(kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'))
-local_libs := $$()
+# extract all local include libraries and send to the compiler
+local_libs := $$(libs=() \
+	&& for dir in ${INCLUDE_DIR}/*/; do libs+=($$PWD/$$dir); done \
+	&& printf -v joined '%s,' "$${libs[@]}" \
+	&& echo $${joined%,})
 
-.PHONY: help	
+.PHONY: help
 help:
 	@echo Usage:
 	@echo "  make [target]"
@@ -58,8 +67,8 @@ lint: ## lint with cpplint for Google cpp guidelines and code styling
 .PHONY: compile
 compile: ## build arduino artefacts
 	@printf "${OKBLUE}Compiling .ino into ${BUILD_DIR}${NC}\n"
-	@arduino-cli compile --warnings "all" \
-		--libraries "${PWD}/include/Segment"\
+	@arduino-cli compile -v --warnings "all" \
+		--libraries $(call local_libs)\
 		--fqbn ${CORE} ${SRC_DIR}
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
