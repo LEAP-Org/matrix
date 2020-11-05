@@ -37,7 +37,7 @@ jobs:
     - name: cpplint
       run: |
         # run against all firmware h, cpp and ino files
-        cpplint --recursive --extensions=ino,h,cpp firmware
+        cpplint --recursive --extensions=ino,h,cpp firmware/src firmware/include
     
   unittest:
     runs-on: ubuntu-latest
