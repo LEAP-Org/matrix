@@ -24,15 +24,20 @@ jobs:
         sudo apt install shellcheck
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
+        python -m pip install cpplint
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
+    - name: flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names in tcs modules
         flake8 tcs --count --select=E9,F63,F7,F82 --show-source --statistics --builtins='self'
-    - name: Lint with shellcheck
+    - name: shellcheck
       run: |
         # run against all bash scripts in /bin
         shellcheck bin/*
+    - name: cpplint
+      run: |
+        # run against all firmware h, cpp and ino files
+        cpplint --recursive --extensions=ino,h,cpp firmware
     
   unittest:
     runs-on: ubuntu-latest
