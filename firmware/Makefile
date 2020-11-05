@@ -44,8 +44,9 @@ compile:
 .PHONY: flash
 flash:
 	@printf "${OKBLUE}Flashing ${BUILD_DIR}${CORE} to ${TTY}${NC}\n"
-	@if [[ -z "$(lsof ${TTY})" ]]; then \
-		kill $$(lsof ${TTY} | awk 'NR>1 {print $2}'); fi;
+	@if [[ -n "$$(lsof ${TTY})" ]]; then \
+		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n"; \
+		kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'); fi;
 	@arduino-cli upload -v -p ${TTY} --fqbn ${CORE} ${SRC_DIR};
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
@@ -53,9 +54,9 @@ flash:
 clean:
 	@printf "${OKBLUE}Cleaning build artefacts: ${BUILD_DIR}${NC}\n";
 	@rm -rfv ${BUILD_DIR};
-	@printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n";
-	@if [[ -z "$(lsof ${TTY})" ]]; then \
-		kill $$(lsof ${TTY} | awk 'NR>1 {print $2}'); fi;
+	@if [[ -n "$$(lsof ${TTY})" ]]; then \
+		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n"; \
+		kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'); fi;
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
 .PHONY: monitor
