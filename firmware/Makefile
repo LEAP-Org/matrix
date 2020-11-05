@@ -22,6 +22,7 @@ LINT_EXT=ino,h,cpp
 # TODO: scrape using `arduino-cli board list` (requires FBQN resolvers)
 TTY := $$(ls /dev/tty.usbserial*)
 kill_serial := $$(kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'))
+local_libs := $$()
 
 .PHONY: help	
 help:
@@ -57,7 +58,9 @@ lint: ## lint with cpplint for Google cpp guidelines and code styling
 .PHONY: compile
 compile: ## build arduino artefacts
 	@printf "${OKBLUE}Compiling .ino into ${BUILD_DIR}${NC}\n"
-	@arduino-cli compile --fqbn ${CORE} ${SRC_DIR}
+	@arduino-cli compile --warnings "all" \
+		--libraries "${PWD}/include/Segment"\
+		--fqbn ${CORE} ${SRC_DIR}
 	@printf "${OKGREEN} ✓ ${NC} Complete\n"
 
 .PHONY: flash
