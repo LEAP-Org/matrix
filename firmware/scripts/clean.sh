@@ -11,6 +11,6 @@ function handler() {
     fi
 }
 
-printf "%b" "${OKB}Cleaning build artefacts: ${BUILD_DIR}${NC}\n";
-rm -rfv "$BUILD_DIR"
+printf "%b" "${OKB}Cleaning build artefacts: ${OKG}$BUILD_PATH${NC}\n";
+rm -rfv "$BUILD_PATH"
 printf "%b" "${OKG} ✓ ${NC} complete\n"
