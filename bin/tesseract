@@ -1,13 +1,13 @@
 #!/bin/bash
 
-set -e
+source .env
 
-OKGREEN='\033[92m'
-# WARNING='\033[93m'
-# FAIL='\033[91m'
-OKBLUE='\033[94m'
-UNDERLINE='\033[4m'
-ENDC='\033[0m'
+trap 'handler $?' ERR
+
+function handler() {
+    printf "%b" "${FAIL} ✗ ${ENDC} tcs init failed on line $2 with status code $1"
+    exit $1
+}
 
 echo "LEAP™ Transmission Control Software"
 echo -e "-----------------------------------\n"
@@ -19,27 +19,14 @@ echo -e "Steven Zhou          | ${OKBLUE}QA and Software Engineer${ENDC}"
 echo -e "Version: ${OKBLUE}38bb9a56f7b1d7cf1b866e1bb883d81df54b179c @ https://github.com/LEAP-Systems/tesseract${ENDC}"
 echo -e "Updated: ${OKBLUE}2020-08${ENDC}\n"
 # setup environment
-echo "Setting up environment ..."
-hostname=$(hostname)
-tty=$(ls /dev/tty.usbserial*)
-export DIM=4
-export T_FREQ=30
-export HOSTNAME="$hostname.local"
-export PASSWORD=leap-0000
-export PORT=65432
-export SERIAL_PORT="$tty"
-export PAYLOAD_DIR=payload
-export TCS_ENV=$1
-
-echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter dimension to ${OKGREEN}$DIM${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter frequency to ${OKGREEN}$T_FREQ${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter address to ${OKGREEN}$HOSTNAME:$PORT${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}Set access point password to ${OKGREEN}$PASSWORD${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}Set transmitter serial out to ${OKGREEN}$SERIAL_PORT${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}Set payload directory to ${OKGREEN}$PAYLOAD_DIR${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}Set tcs environment to ${OKGREEN}$TCS_ENV${ENDC}"
-echo -e "${OKGREEN} ✓ ${ENDC}Setup complete "
-echo -e "-----------------------------------\n"
+exit 127
+echo -e "${OKGREEN} ✓ ${ENDC}dimension to ${OKGREEN}$DIM${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}frequency to ${OKGREEN}$T_FREQ${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}address to ${OKGREEN}$HOSTNAME:$PORT${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}access point password to ${OKGREEN}$PASSWORD${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}transmitter serial out to ${OKGREEN}$SERIAL_PORT${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}payload directory to ${OKGREEN}$PAYLOAD_DIR${ENDC}"
+echo -e "${OKGREEN} ✓ ${ENDC}tcs environment to ${OKGREEN}$TCS_ENV${ENDC}"
 
 # host ap
 ./bin/ap-enable
