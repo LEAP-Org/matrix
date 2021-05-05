@@ -40,7 +40,7 @@ Dependencies:
 Copyright © 2020 LEAP. All Rights Reserved.
 """
 import binascii
-import logging.config
+import logging
 import random
 import sys
 import time
@@ -55,8 +55,6 @@ from tcs.codec.cache import TransmissionCache
 from tcs.tcu.registry import APRegistry
 from tcs.file.file_parser import FileParser
 from tcs.wap.ap_handler import ApHandler
-
-# from pynput.keyboard import Key, Listener
 
 from tcs.event.registry import EventRegistry
  
@@ -108,7 +106,7 @@ class TransmissionControlUnit:
             self.ser = serial.Serial(self.transmitter_port,
                                      constants.BAUD_RATE, 
                                      write_timeout=(self.transmit_freq*constants.CW_RESPONSE_RATIO))
-        except serial.serialutil.SerialException as exc:
+        except serial.SerialException as exc:
             self.log.exception(
                 "TCU initialization failed. Unable to establish serial connection at port: %s.",
                 self.transmitter_port)
@@ -118,7 +116,7 @@ class TransmissionControlUnit:
         self.log.info("%s successfully instantiated", __name__)
         # selector for runtime executable
         if os.environ['TCS_ENV'] == 'demo':
-            self.key_listener()
+            self.demo(message="LEAP")
         elif os.environ['TCS_ENV'] == 'server':
             self.ap_handler.run_server()
         else:
@@ -134,25 +132,16 @@ class TransmissionControlUnit:
         self.log.info("Exiting...")
         sys.exit()
 
-    def on_press(self, key):
-        # print(type(key))
-        # if str(key) == "'q'":
-        #     return False
-        # char = str(key).replace('\'', '')
-        # print('Encoding: {}'.format(char))
-        # self.ser.write(bytes(char, 'ascii'))
-        pass
-
-    def key_listener(self):
+    def demo(self, message:str) -> None:
         """
-        Listen for keypress and send to serial monitor
+        Transmit an ASCII encoded message
         """
-        # print("LEAP text encoding:")
-        # while True:
-        #     # Collect events until released
-        #     with Listener(on_press=self.on_press) as listener:
-        #         listener.join()
-        pass
+        print("LEAP text encoding: {}".format(message))
+        for byte in message:
+            ascii_byte = bytes(byte, 'ascii')
+            print("{} -> {}".format(byte, ord(byte)))
+            self.ser.write(ascii_byte)
+            time.sleep(1)
         
 
     def scheduler(self):
