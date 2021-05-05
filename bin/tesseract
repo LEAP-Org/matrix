@@ -12,7 +12,7 @@ function handler() {
 }
 
 echo "LEAP™ Transmission Control Software"
-echo "-----------------------------------\n"
+printf "-----------------------------------\n"
 printf "%b" "${UNDERLINE}Development Team:${ENDC}\n" 
 echo -e "Christian Sargusingh | ${OKBLUE}Lead Designer and Systems Engineer${ENDC}"
 echo -e "Aaron Huang          | ${OKBLUE}Hardware Engineer${ENDC}"
