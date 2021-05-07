@@ -13,6 +13,7 @@
  * @author Christian Sargusingh
  * Contact: christian@leapsystems.online
  */
+#include <Arduino.h>
 #include <SPI.h>
 #include <SoftwareSerial.h>
 #include <Segment.h>
@@ -36,22 +37,22 @@ void setup() {
 void loop() {
     if (Serial.available() > 0) {
         c = Serial.read();
-        if (c == 0xD || c == 0xA) {
-            Serial.println("Received D or A EOS byte");
-        } else {
-            msb = c >> 4;
-            lsb = c & 0x0F;
-            Serial.print("Received: ");
-            Serial.println(c, HEX);
-            Serial.println(msb, HEX);
-            Serial.println(lsb, HEX);
-            segment_lsb.displayHex(lsb);
-            segment_msb.displayHex(msb);
-            SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
-            digitalWrite(SS, LOW);
-            SPI.transfer(c);
-            digitalWrite(SS, HIGH);
-            SPI.endTransaction();
-        }
+        // if (c == 0xD || c == 0xA) {
+        //     Serial.println("Received D or A EOS byte");
+        // } else {
+        msb = c >> 4;
+        lsb = c & 0x0F;
+        Serial.print("Received: ");
+        Serial.println(c, HEX);
+        Serial.println(msb, HEX);
+        Serial.println(lsb, HEX);
+        segment_lsb.displayHex(lsb);
+        segment_msb.displayHex(msb);
+        SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
+        digitalWrite(SS, LOW);
+        SPI.transfer(c);
+        digitalWrite(SS, HIGH);
+        SPI.endTransaction();
+        // }
     }
 }
