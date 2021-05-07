@@ -45,6 +45,7 @@ import random
 import sys
 import time
 import os
+from typing import List
 
 import serial
 import tabulate
@@ -116,7 +117,8 @@ class TransmissionControlUnit:
         self.log.info("%s successfully instantiated", __name__)
         # selector for runtime executable
         if os.environ['TCS_ENV'] == 'demo':
-            self.demo(message="LEAP")
+            # self.demo(message="Hello my name is christian welcome to leap")
+            self.debug()
         elif os.environ['TCS_ENV'] == 'server':
             self.ap_handler.run_server()
         else:
@@ -141,9 +143,21 @@ class TransmissionControlUnit:
             ascii_byte = bytes(byte, 'ascii')
             print("{} -> {}".format(byte, ord(byte)))
             self.ser.write(ascii_byte)
-            time.sleep(1)
+            # time.sleep(0.01)
         
-
+    def debug(self) -> None:
+        """
+        Transmit list of bytestream
+        """
+        
+        # print(bytes([3]))
+        self.ser.write(bytes([x for x in range(256)]))
+        
+        # for byte in [[x] for x in range(256)]:
+        #     print("Loading -> {}".format(byte))
+        #     self.ser.write(bytes(byte))
+        #     time.sleep(0.1)
+    
     def scheduler(self):
         """This function schedules transmission events with random frame data while the queue is
         empty. Otherwise the queued transmission events are executed in LIFO order.
