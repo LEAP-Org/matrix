@@ -151,12 +151,12 @@ class TransmissionControlUnit:
         """
         
         # print(bytes([3]))
-        self.ser.write(bytes([x for x in range(256)]))
+        # self.ser.write(bytes([x for x in range(256)]))
         
-        # for byte in [[x] for x in range(256)]:
-        #     print("Loading -> {}".format(byte))
-        #     self.ser.write(bytes(byte))
-        #     time.sleep(0.1)
+        for byte in [[x] for x in range(256)]:
+            print("Loading -> {}".format(byte))
+            self.ser.write(bytes(byte))
+            time.sleep(0.1)
     
     def scheduler(self):
         """This function schedules transmission events with random frame data while the queue is
