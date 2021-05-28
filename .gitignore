@@ -3,9 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# vscode workspace JSON
-*.code-workspace
-.vscode/
 
 # c compiler build folder
 firmware/src/build/

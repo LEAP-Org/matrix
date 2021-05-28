@@ -3,35 +3,8 @@
 # Makefile for linting, compiling, flashing larger scale ardunio projects and
 # interfacing with the arduino serial monitor
 # 
-# Modified: 2020-11
-# Copyright © 2020 Christian Sargusingh
-
-OKGREEN=\033[92m
-# WARNING=\033[93m
-# FAIL=\033[91m
-OKBLUE=\033[94m
-UNDERLINE=\033[4m
-NC=\033[0m
-
-# User Env flags
-# include files
-INCLUDE_DIR=include
-# src files
-SRC_DIR=src
-# build directory
-BUILD_DIR=src/build/
-# build core (ref arduino-cli)
-CORE=arduino:avr:uno
-LINT_EXT=ino,h,cpp
-# scrape serial port from /dev
-# TODO: scrape using `arduino-cli board list` (requires FBQN resolvers)
-TTY := $$(ls /dev/tty.usbserial*)
-kill_serial := $$(kill -9 $$(lsof ${TTY} | awk 'NR>1 {print $$2}'))
-# extract all local include libraries and send to the compiler
-local_libs := $$(libs=() \
-	&& for dir in ${INCLUDE_DIR}/*/; do libs+=($$PWD/$$dir); done \
-	&& printf -v joined '%s,' "$${libs[@]}" \
-	&& echo $${joined%,})
+# Modified: 2021-04
+# Copyright © 2021 Christian Sargusingh
 
 .PHONY: help
 help:
@@ -45,52 +18,28 @@ help:
 		 }' $(MAKEFILE_LIST)
 
 .PHONY: all
-all: lint compile flash
+all: lint compile flash monitor
 
 .PHONY: setup
 setup: ## configure arduino-cli and install cpplinter
-	@arduino-cli config init;
-	@arduino-cli core update-index;
-	@arduino-cli core install arduino:avr;
-	@arduino-cli core upgrade;
-	@arduino-cli core list;
-	@arduino-cli board listall;
-	@python3 -m pip install cpplint
+	@./scripts/setup.sh
 
 .PHONY: lint
-lint: ## lint with cpplint for Google cpp guidelines and code styling
-	@printf "${OKBLUE}Linting filesystems ... \n\tExtensions:\t${OKGREEN}${LINT_EXT} \n${OKBLUE}\
-		Source dir:\t${OKGREEN}${SRC_DIR}\n\t${OKBLUE}Include dir:\t${OKGREEN}${INCLUDE_DIR}${NC}\n"
-	@cpplint --recursive --extensions=${LINT_EXT} ${SRC_DIR} ${INCLUDE_DIR}
-	@printf "${OKGREEN} ✓ ${NC} Complete\n"
+lint: ## lint with cpplint (Google standards)
+	@./scripts/lint.sh
 
 .PHONY: compile
-compile: ## build arduino artefacts
-	@printf "${OKBLUE}Compiling .ino into ${BUILD_DIR}${NC}\n"
-	@arduino-cli compile -v --warnings "all" \
-		--libraries $(call local_libs)\
-		--fqbn ${CORE} ${SRC_DIR}
-	@printf "${OKGREEN} ✓ ${NC} Complete\n"
+compile: ## compile source code and save artefactsto the build directory
+	@./scripts/compile.sh
 
 .PHONY: flash
 flash: ## flash arduino build artefacts to board
-	@printf "${OKBLUE}Flashing ${BUILD_DIR}${CORE} to ${TTY}${NC}\n"
-	@if [[ -n "$$(lsof ${TTY})" ]]; then \
-		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n" \
-		$(call kill_serial); fi;
-	@arduino-cli upload -v -p ${TTY} --fqbn ${CORE} ${SRC_DIR};
-	@printf "${OKGREEN} ✓ ${NC} Complete\n"
+	@./scripts/flash.sh
 
 .PHONY: clean
-clean: ## clear build artefacts and close serial monitor
-	@printf "${OKBLUE}Cleaning build artefacts: ${BUILD_DIR}${NC}\n";
-	@rm -rfv ${BUILD_DIR};
-	@if [[ -n "$$(lsof ${TTY})" ]]; then \
-		printf "${OKBLUE}Closing serial montior @ ${TTY}${NC}\n" \
-		$(call kill_serial); fi;
-	@printf "${OKGREEN} ✓ ${NC} Complete\n"
+clean: ## wipe build artefacts
+	@./scripts/clean.sh
 
 .PHONY: monitor
-monitor: ## Open serial port using tty. Ctrl-a + d to exit screen
-	@screen ${TTY}
-	# to reconnnect to serial monitor: screen -r [pid.]tty.host
+monitor: ## Stream plaintext from arduino serial monitor
+	@./scripts/monitor.sh

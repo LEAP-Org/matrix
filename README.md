@@ -1,5 +1,5 @@
 # Light Emitting Access Point Tesseract
-[![Tesseract Build](https://github.com/LEAP-Systems/tesseract/workflows/Tesseract%20Build/badge.svg?branch=master)](https://github.com/LEAP-Systems/tesseract/actions)
+[![ci](https://github.com/LEAP-Systems/tesseract/actions/workflows/ci.yml/badge.svg)](https://github.com/LEAP-Systems/tesseract/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/LEAP-Systems/tesseract/branch/master/graph/badge.svg?token=QZ3AXPMDPA)](https://codecov.io/gh/LEAP-Systems/tesseract)
 
 ![img](/docs/img/LEAP_INS.png)

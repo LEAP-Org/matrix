@@ -1,0 +1,44 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.cpptools",
+            "visualstudioexptteam.vscodeintellicode",
+            "eamodio.gitlens",
+            "mikestead.dotenv",
+            "mine.cpplint"
+        ]
+    },
+    "settings": {
+        "workbench.activityBar.visible": true,
+        "editor.suggestSelection": "first",
+        "editor.rulers": [80],
+        "breadcrumbs.enabled": true,
+        "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+        "workbench.sideBar.location": "left",
+        "diffEditor.ignoreTrimWhitespace": false,
+        "window.zoomLevel": 2,
+        "[cpp]": {
+            "editor.wordBasedSuggestions": false,
+            "editor.suggest.insertMode": "replace",
+            "editor.semanticHighlighting.enabled": true,
+        },
+        "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 2, ColumnLimit: 0}",
+        "C_Cpp.errorSquiggles": "EnabledIfIncludesResolve", 
+        "cpplint.root": "${workspaceFolder}",
+        "cpplint.repository": "${workspaceFolder}",
+        "cpplint.lintMode": "workspace",
+        "cpplint.cpplintPath":"/home/ubuntu/.local/bin/cpplint",
+        "cpplint.extensions": [
+            "cpp",
+            "c",
+            "h",
+            "ino"
+        ],
+        "python.pythonPath": "/usr/bin/python3"
+    }
+}
