@@ -29,7 +29,7 @@ echo -e "${OKGREEN} ✓ ${ENDC}payload directory to ${OKGREEN}$PAYLOAD_DIR${ENDC
 echo -e "${OKGREEN} ✓ ${ENDC}tcs environment to ${OKGREEN}$TCS_ENV${ENDC}"
 
 # host ap
-./bin/ap-enable
+# ./bin/ap-enable
 
 # tcs entry
 python3 -m tcs
