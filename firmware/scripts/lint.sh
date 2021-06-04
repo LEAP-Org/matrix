@@ -13,5 +13,5 @@ function handler() {
 }
 
 printf "%b" "${OKB}Linting extensions: ${OKG}$LINT_EXT${OKB} in ${OKG}$SRC_PATH${OKB} and ${OKG}$LD_PATH${NC}\n"
-cpplint --recursive --extensions="$LINT_EXT" "$SRC_PATH" "$LD_PATH"
+cpplint --recursive "$SRC_PATH" "$LD_PATH"
 printf "%b" "${OKG} ✓ ${NC} complete\n"
