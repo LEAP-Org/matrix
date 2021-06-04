@@ -21,7 +21,6 @@
         "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
         "workbench.sideBar.location": "left",
         "diffEditor.ignoreTrimWhitespace": false,
-        "window.zoomLevel": 2,
         "[cpp]": {
             "editor.wordBasedSuggestions": false,
             "editor.suggest.insertMode": "replace",
