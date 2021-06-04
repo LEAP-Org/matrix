@@ -2508,9 +2508,6 @@ FRAME-LETTER</description>
 <sheets>
 <sheet>
 <plain>
-<text x="170.18" y="10.16" size="1.778" layer="91">Christian S.</text>
-<text x="109.22" y="157.48" size="1.778" layer="91">MSB</text>
-<text x="134.62" y="157.48" size="1.778" layer="91">LSB</text>
 </plain>
 <instances>
 <instance part="IC1" gate="A" x="104.14" y="81.28" smashed="yes">
