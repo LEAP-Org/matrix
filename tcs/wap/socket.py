@@ -40,7 +40,7 @@ class SocketHandler:
         """
         recv = None
         hostname = os.environ.get('HOSTNAME')
-        port = int(os.environ.get('PORT'))
+        port = int(os.environ.get('PORT', '65432'))
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as soc:
             # Uplink socket bind
             try:

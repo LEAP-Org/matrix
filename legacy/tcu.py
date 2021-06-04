@@ -8,6 +8,35 @@ Repository: https://github.com/cSDes1gn/LEAP/tree/master/src/tcs
 README available in repository root
 Version: 3.0
  
+The Transmission Control Unit is the main module for coordinating transmission events and validating
+receiver connections. It extends operation to `file_parser`, `register`, and `spatial_codec` modules
+The TCU is initialized with transmission files within its designated directory. It is the server for
+these files and is responsible for deconstructing the file into bits, validating receiver
+connections, generating custom sessions for each user request, encoding frame data to the
+transmitter and scheduling transmission events.
+ 
+Dependencies:
+-------------
+>>> import binascii
+>>> import math
+>>> import pickle
+>>> import random
+>>> import socket
+>>> import sys
+>>> import time
+>>> from threading import Thread
+ 
+>>> import numpy as np
+>>> import serial
+>>> import tabulate
+>>> import threading_sched as sched
+>>> from bitarray import bitarray
+ 
+>>> import file_parser as parser
+>>> import register as reg
+>>> import spatial_codec as sc
+ 
+ 
 Copyright © 2020 LEAP. All Rights Reserved.
 """
 import binascii
@@ -43,6 +72,7 @@ class TransmissionControlUnit:
     """
  
     def __init__(self):
+        
         self.log = logging.getLogger(__name__)
 
         # Data type field initialization
