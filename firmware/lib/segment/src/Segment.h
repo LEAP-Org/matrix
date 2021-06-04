@@ -14,8 +14,8 @@
  * Contact: christian@leapsystems.online
  */
 
-#ifndef FIRMWARE_INCLUDE_SEGMENT_SRC_SEGMENT_H_
-#define FIRMWARE_INCLUDE_SEGMENT_SRC_SEGMENT_H_
+#ifndef LIB_SEGMENT_SRC_SEGMENT_H_
+#define LIB_SEGMENT_SRC_SEGMENT_H_
 #include <Arduino.h>
 class Segment {
  public:
@@ -26,4 +26,4 @@ class Segment {
  private:
   int pins[7];
 };
-#endif  // FIRMWARE_INCLUDE_SEGMENT_SRC_SEGMENT_H_
+#endif  // LIB_SEGMENT_SRC_SEGMENT_H_
