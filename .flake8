@@ -6,7 +6,6 @@ ignore =
     E2, # whitespaces
     E3, # blank lines
     W293, # blank lint contains whitespace
-    E128, # visual indents
     W291, # trailing whitespaces
     W503, # bad practice: PEP 8 recommended style, which was changed on April 16th, 2016
 max-line-length = 120
