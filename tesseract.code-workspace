@@ -11,6 +11,7 @@
       "ms-vscode-remote.remote-ssh",
       "visualstudioexptteam.vscodeintellicode",
       "eamodio.gitlens",
+      "mikestead.dotenv",
       "njpwerner.autodocstring",
       "yzhang.markdown-all-in-one",
       "kevinglasson.cornflakes-linter"
