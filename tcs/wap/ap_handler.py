@@ -30,20 +30,20 @@ class ApHandler:
             event.register('POST_FRAMECNT', self.post_frame_count)
         self.log.info("%s successfully instantiated", __name__)
 
-    def init_connection(self, ap_index: int):
-        self.log.info("Initializing receiver at AP: %s", ap_index)
-        self.socket.register(ap_index)
+    def init_connection(self):
+        #self.log.info("Initializing receiver at AP: %s", ap_index)
+        # self.socket.register(ap_index)
         # Notify success
-        self.socket.post_request(ap_index, obj=True, msg="Defining session at AP: {}".format(ap_index))
+        #self.socket.post_request(ap_index, obj=True, msg="Defining session at AP: {}".format(ap_index))
         with EventRegistry() as event:
             event.execute('FETCH_PAYLOAD')
 
-    def post_frame_count(self, ap_index: int, framecnt: int):
-        self.socket.post_request(ap_index, obj=framecnt, msg="Capture frame count:: {}".format(framecnt))
+    def post_frame_count(self, framecnt: int):
+        self.socket.sendFrameNumber(framecnt)
 
     def run_server(self):
-        bytestream = self.socket.request_listener()
-        self.log.info("Received '%s' from socket", bytestream)
+        bytestream = self.socket.run()
+        #self.log.info("Received '%s' from socket", bytestream)
         with EventRegistry() as event:
             event.execute('TRANSMIT', bytestream)
             self.log.info("Executed transmission event")
