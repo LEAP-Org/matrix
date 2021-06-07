@@ -16,9 +16,9 @@ Dependencies
 Copyright © 2020 LEAP. All Rights Reserved.
 """
 import sys
-import logging.config
-from threading import Thread
+import logging
 from tcs.event.event import Event
+
 
 class EventRegistry:
     """
@@ -28,7 +28,7 @@ class EventRegistry:
         ... 
     }
     """
-    
+
     _event_registry = dict()
 
     def __init__(self):
@@ -46,7 +46,7 @@ class EventRegistry:
     def __repr__(self):
         return str(self._event_registry)
 
-    def set_mask(self, event_type: str, state:bool):
+    def set_mask(self, event_type: str, state: bool):
         """ Set the mask field of a set of events """
         try:
             events = self._event_registry[event_type]
@@ -63,12 +63,12 @@ class EventRegistry:
         :param event_type: execute all isr's bound to this event type
         """
         try:
-            events = filter(lambda event : not event.masked, self._event_registry[event_type])
+            events = filter(lambda event: not event.masked, self._event_registry[event_type])
         except KeyError:
             self.log.error("Event type does not exist in registry")
         else:
             for event in events:
-                event.isr(*args,**kwargs)
+                event.isr(*args, **kwargs)
             self.log.info("Successfully dispatched all events for %s", event_type)
         self.log.info(self)
 
@@ -90,4 +90,3 @@ class EventRegistry:
                 self._event_registry[event_type] = {event}
             self.log.info("Registered event: %s with isr: %s to the registry", event, event.isr)
         self.log.info(self)
-        

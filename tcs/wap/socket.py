@@ -14,20 +14,20 @@ Copyright © 2020 LEAP. All Rights Reserved.
 """
 
 import os
-import logging.config
-import pickle
+import logging
 import socket
 from threading import Thread
 
 from tcs.event.registry import EventRegistry
 
+
 class SocketHandler:
-    
+
     _socket_registry = [None for _ in range(4)]
 
     def __init__(self):
         self.log = logging.getLogger(__name__)
-        
+
         # with EventRegistry() as event:
         #     event.register('SHUTDOWN', self.shutdown)
         #     event.register('POST_REQUEST', self.post_request)
@@ -47,7 +47,8 @@ class SocketHandler:
                 soc.bind((hostname, port))
             except ConnectionError as exc:
                 # Protect against multiple instances by checking the server port
-                self.log.exception("TCU initialization failed. Server socket bind encountered a connection error: %s",exc)
+                self.log.exception(
+                    "TCU initialization failed. Server socket bind encountered a connection error: %s", exc)
                 raise ConnectionError from exc
             else:
                 self.log.info("Server socket bind successful. Initializing listener thread")
@@ -70,14 +71,13 @@ class SocketHandler:
                 # with EventRegistry() as event:
                 #     event.execute('VALIDATE_APR', apr)
         return recv
-                
-    
-    def register(self, ap_index:int):
+
+    def register(self, ap_index: int):
         """
         """
         # self._socket_registry[ap_index] = (self.conn, self.addr)
 
-    def post_request(self, ap_index, obj:object, msg:str=""):
+    def post_request(self, ap_index, obj: object, msg: str = ""):
         """
         This function is bound to event:POST_REQUEST. It pickles an object to the client and sends
         an optional message.
@@ -90,7 +90,7 @@ class SocketHandler:
         #     if len(msg) > 0:
         #         conn.send((msg).encode('utf-8'))
 
-    def get_request(self, ap_index:int=-1, size:int=2048):
+    def get_request(self, ap_index: int = -1, size: int = 2048):
         """
         This function is bound to event:POST_REQUEST. It pickles an object to the client and sends
         an optional message.
