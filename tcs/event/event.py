@@ -25,7 +25,6 @@ class Event(Generic[_T]):
         self.log = logging.getLogger(__name__)
         self.event_id = event_id
         self._registry = list()
-        self.log.info("%s successfully instantiated", self.event_id)
 
     def __repr__(self) -> str:
         """
