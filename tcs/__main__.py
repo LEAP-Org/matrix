@@ -60,12 +60,12 @@ def main(argv: list) -> None:
     _log.info("Initializing Server")
     # initialize socket
     try:
-        if address is None: ApHandler()  # use default address
-        else: ApHandler(address)
+        if address is None: server = ApHandler()  # use default address
+        else: server = ApHandler(address)
     except ConnectionError as exc:
         _log.exception("Socket initialization encountered an exception: %s", exc)
         raise ConnectionError from exc
-
+    server.start()
 
 if __name__ == '__main__':
     _log = logging.getLogger(__name__)
