@@ -1,0 +1,23 @@
+# TCS Logging Configuration
+# -------------------------
+# Copyright © 2021 LEAP. All Rights Reserved.
+
+version: 1
+disable_existing_loggers: True
+loggers:
+  # default logger for unregistered modules
+  '':
+    level: 'DEBUG'
+    handlers: ['console_handler']
+  tcs:
+    level: 'DEBUG'
+    handlers: ['console_handler']
+    propagate: no
+handlers:
+  console_handler:
+    class: 'logging.StreamHandler'
+    level: 'DEBUG'
+    formatter: default
+formatters:
+  default:
+    format: '%(asctime)s - %(name)s - %(lineno)d - %(levelname)s : %(message)s'
