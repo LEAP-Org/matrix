@@ -21,7 +21,8 @@ class SocketInterface:
 
     def __init__(self, addr: str):
         self._log = logging.getLogger(__name__)
-        self.host, self.port = addr.split('.')  # Port to listen on (non-privileged ports are > 1023)
+        self.host, port = addr.split(':')  # Port to listen on (non-privileged ports are > 1023)
+        self.port = int(port)
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc.bind((self.host, self.port))
         self._log.info("bound socket to %s:%s", self.host, self.port)
