@@ -31,12 +31,6 @@ class ApHandler:
     def start(self):
         self.socket.run()
 
-    def init_connection(self):
-        # Notify success
-        #self.socket.post_request(ap_index, obj=True, msg="Defining session at AP: {}".format(ap_index))
-        with EventRegistry() as event:
-            event.execute('FETCH_PAYLOAD')
-
     def post_frame_count(self, framecnt: int):
         self.socket.sendFrameNumber(framecnt)
 
