@@ -53,8 +53,8 @@ IRIS:
 4. client capture and process
 5. client verifies checksum 5322
 6. checksum validation fails
-7. client sends crc32(544f~UP)~ACK -> 5322~ACK
-8. server receives 5322~ACK and validates checksum
+7. client sends crc32(544f~UP)~NACK -> 5322~NACK
+8. server receives 5322~NACK and validates checksum
 9. server checksum validation fails (the client received the wrong checksum)
 11. server resends 543f~UP
 
@@ -65,8 +65,8 @@ IRIS:
 4. client capture and process
 5. client verifies checksum 5322
 6. checksum validation fails
-7. client sends crc32(543f~UP)~ACK -> 43f2~ACK
-8. server receives 43f2~ACK and validates checksum
+7. client sends crc32(543f~UP)~ACK -> 43f2~NACK
+8. server receives 43f2~NACK and validates checksum
 9. server checksum validation passes (the client capture was faulty) 
 10. server updates retry counter
 11. if over limit then terminate connection with null byte (0x00) 
