@@ -12,12 +12,10 @@ Copyright © 2021 LEAP. All Rights Reserved.
 import logging
 import socket
 
-from tcs.ap.config import APConfig as ac
+from tcs.tcp.config import APConfig as ac
 
 
 class SocketInterface:
-
-    mainClientSocket = None
 
     def __init__(self, addr: str):
         self._log = logging.getLogger(__name__)
@@ -26,11 +24,11 @@ class SocketInterface:
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc.bind((self.host, self.port))
         self._log.info("bound socket to %s:%s", self.host, self.port)
-        self.shutdown = False
+        self.stop_flag = False
         self._log.info("%s successfully instantiated", __name__)
 
     def run(self):
-        while not self.shutdown:
+        while not self.stop_flag:
             self.soc.listen()
             clientsocket, addr = self.soc.accept()
             self.mainClientSocket = clientsocket
@@ -83,4 +81,4 @@ class SocketInterface:
         """
         Kill main event loop
         """
-        self.shutdown = True
+        self.soc.close()
