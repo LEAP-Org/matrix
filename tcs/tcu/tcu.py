@@ -14,6 +14,7 @@ import random
 
 from tcs.event.registry import Registry as events
 from tcs.tcu.config import TCUConfig as tc
+from tcs.cache.cache import FrameCache
 
 
 class TransmissionControlUnit:
@@ -40,6 +41,8 @@ class TransmissionControlUnit:
         while True:
             bytestream = bytes([random.randint(0, 255)])
             await self.transmit(bytestream)
+            with FrameCache() as fc:
+                fc.post(bytestream)
             await asyncio.sleep(tc.IDLE_SLEEP)
 
     async def transmit(self, data: bytes):
