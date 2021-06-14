@@ -10,6 +10,8 @@ Copyright © 2021 LEAP. All Rights Reserved.
 import sys
 import getopt
 import logging
+import asyncio
+from threading import Thread
 
 from tcs.api.server import app as server
 from tcs.tcu.tcu import TransmissionControlUnit
@@ -36,7 +38,7 @@ def usage(exit_code: int) -> None:
 
 
 def main(argv: list) -> None:
-    port = None
+    serial = None
     address = None
     opts = []
     try:
@@ -44,7 +46,7 @@ def main(argv: list) -> None:
     except getopt.GetoptError:
         print("command contained unexpected arguments")
         usage(exit_code=2)
-    if opts == []: usage(exit_code=2) 
+    if opts == []: usage(exit_code=2)
     for opt, arg in opts:
         if opt in ("-s", "--serial-port"):
             serial = arg
@@ -57,14 +59,17 @@ def main(argv: list) -> None:
             usage(exit_code=0)
 
     _log.info("Initializing Transmission Control Unit")
-    # if serial is None: TransmissionControlUnit()  # initialize tcu with default port
-    # else: TransmissionControlUnit(serial)
+    if serial is None: tcu = TransmissionControlUnit()  # initialize tcu with default port
+    else: tcu = TransmissionControlUnit(serial)
+
     _log.info("Initializing Server")
     # initialize socket
     host, port = address.split(':')  # Port to listen on (non-privileged ports are > 1023)
     port = int(port)
-    # start flask server
-    server.run(host=host, port=port, debug=True)
+    Thread(name="api", target=server.run, kwargs={'host': host, 'port': port,
+           'debug': True, 'use_reloader': False}, daemon=True).start()
+    asyncio.run(tcu.run())
+
 
 if __name__ == '__main__':
     _log = logging.getLogger(__name__)
