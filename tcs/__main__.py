@@ -11,8 +11,8 @@ import sys
 import getopt
 import logging
 
+from tcs.api.server import app as server
 from tcs.tcu.tcu import TransmissionControlUnit
-from tcs.ap.ap_handler import ApHandler
 from tcs.__version__ import __version__
 
 
@@ -38,14 +38,16 @@ def usage(exit_code: int) -> None:
 def main(argv: list) -> None:
     port = None
     address = None
+    opts = []
     try:
         opts, _ = getopt.getopt(argv, "s:a:h:v:", ["serial-port=", "address=", "help=", "version="])
     except getopt.GetoptError:
         print("command contained unexpected arguments")
         usage(exit_code=2)
+    if opts == []: usage(exit_code=2) 
     for opt, arg in opts:
         if opt in ("-s", "--serial-port"):
-            port = arg
+            serial = arg
         elif opt in ("-a", "--address"):
             address = arg
         elif opt in ("-v", "--version"):
@@ -55,17 +57,14 @@ def main(argv: list) -> None:
             usage(exit_code=0)
 
     _log.info("Initializing Transmission Control Unit")
-    if port is None: TransmissionControlUnit()  # initialize tcu with default port
-    else: TransmissionControlUnit(port)
+    # if serial is None: TransmissionControlUnit()  # initialize tcu with default port
+    # else: TransmissionControlUnit(serial)
     _log.info("Initializing Server")
     # initialize socket
-    try:
-        if address is None: server = ApHandler()  # use default address
-        else: server = ApHandler(address)
-    except ConnectionError as exc:
-        _log.exception("Socket initialization encountered an exception: %s", exc)
-        raise ConnectionError from exc
-    server.start()
+    host, port = address.split(':')  # Port to listen on (non-privileged ports are > 1023)
+    port = int(port)
+    # start flask server
+    server.run(host=host, port=port, debug=True)
 
 if __name__ == '__main__':
     _log = logging.getLogger(__name__)
