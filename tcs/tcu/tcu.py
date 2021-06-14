@@ -3,21 +3,20 @@
 LEAP™ Transmission Control Unit
 ===============================
 Modified: 2021-06
- 
+
 Copyright © 2021 LEAP. All Rights Reserved.
 """
-import logging
-import os
 
 import serial
+import asyncio
+import logging
+import random
 
 from tcs.event.registry import Registry as events
 from tcs.tcu.config import TCUConfig as tc
 
 
 class TransmissionControlUnit:
-    """
-    """
 
     def __init__(self, port=tc.DEFAULT_PORT):
         self._log = logging.getLogger(__name__)
@@ -36,6 +35,12 @@ class TransmissionControlUnit:
                 self.port)
             raise IOError from exc  # for clarity
         self._log.info("%s successfully instantiated", __name__)
+
+    async def run(self):
+        while True:
+            bytestream = bytes([random.randint(0, 255)])
+            await self.transmit(bytestream)
+            await asyncio.sleep(tc.IDLE_SLEEP)
 
     async def transmit(self, data: bytes):
         try:
