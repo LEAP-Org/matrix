@@ -7,6 +7,7 @@ from tcs.tcp.socket import SocketInterface
 
 app = Flask(__name__)
 
+
 @app.route('/v1/register', methods=['POST'])
 def register() -> str:
     payload: dict = request.json
@@ -18,7 +19,7 @@ def register() -> str:
     if not result:
         abort(401)
     # TODO: run random port selection on set of available ports
-    port = 5000
+    port = 6000
     # start new socket connection
     socket = SocketInterface(addr="localhost:{}".format(port))
     Thread(name=apr, target=socket.run, args=(), daemon=True).start()
