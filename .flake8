@@ -1,7 +1,6 @@
 [flake8]
 exclude=
     __pycache__
-    monitor/flash_service/icb/
 ignore =
     W503, # bad practice: PEP 8 recommended style, which was changed on April 16th, 2016
     E701, # multiple statements on one line
