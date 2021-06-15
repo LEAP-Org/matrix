@@ -1,7 +1,6 @@
 from threading import Thread
 from flask import Flask, request, abort, jsonify
 from flask.wrappers import Response
-from werkzeug.exceptions import BadRequest, HTTPException, Unauthorized
 from tcs.cache.cache import FrameCache
 from tcs.tcp.socket import SocketInterface
 from tcs.event.registry import Registry as events
@@ -23,8 +22,6 @@ def register() -> Response:
     # start new socket connection
     socket = SocketInterface(addr="localhost:{}".format(port))
     Thread(name=apr_key, target=socket.run, args=(), daemon=True).start()
-    # enqueue new data for sending
-    events.enqueue.execute("Hello World!".encode('utf-8'))
     payload = {
         'port': port
     }
