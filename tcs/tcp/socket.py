@@ -9,10 +9,12 @@ Dependencies
 Copyright © 2021 LEAP. All Rights Reserved.
 """
 
+import time
 import logging
 import socket
 
 from tcs.tcp.config import APConfig as ac
+from tcs.event.registry import Registry as events
 
 
 class SocketInterface:
@@ -31,6 +33,11 @@ class SocketInterface:
         while not self.stop_flag:
             self.soc.listen()
             clientsocket, addr = self.soc.accept()
+            # enqueue new data for sending
+            events.enqueue.execute("Hello World!".encode('utf-8'))
+            while True:
+                time.sleep(5)
+                events.uplink.execute()
             self.mainClientSocket = clientsocket
             with clientsocket:
                 self._log.debug("connection from %s", addr)
