@@ -21,3 +21,4 @@ class Registry:
     shutdown = Event[Callable[[], Coroutine[Any, Any, None]]]('shutdown')
     transmit = Event[Callable[[bytes], Coroutine[Any, Any, None]]]('transmit')
     enqueue = Event[Callable[[bytes], Coroutine[Any, Any, None]]]('enqueue')
+    uplink = Event[Callable[[], Coroutine[Any, Any, None]]]('uplink')
