@@ -11,6 +11,7 @@ import serial
 import asyncio
 import logging
 import random
+from queue import Queue
 
 from tcs.event.registry import Registry as events
 from tcs.tcu.config import TCUConfig as tc
@@ -25,6 +26,8 @@ class TransmissionControlUnit:
         self.port = port
         # event registration
         events.transmit.register(self.transmit)
+        events.enqueue.register(self.enqueue)
+        self.frame_queue: Queue[bytes] = Queue()
         # initialize arduino serial connection
         try:
             self.ser = serial.Serial(port=self.port,
@@ -37,15 +40,28 @@ class TransmissionControlUnit:
             raise IOError from exc  # for clarity
         self._log.info("%s successfully instantiated", __name__)
 
+    async def enqueue(self, data: bytes) -> None:
+        # can we iterate through bytes returning bytes and not ints?
+        for i in data:
+            b = i.to_bytes(1, byteorder='little')
+            self.frame_queue.put(b)
+        self._log.info("Queued payload: %s", data)
+
     async def run(self):
         while True:
-            bytestream = bytes([random.randint(0, 255)])
+            # perform idle action if queue is empty
+            if self.frame_queue.empty():
+                bytestream = bytes([random.randint(0, 255)])
+            else:
+                # get new item from the queue
+                bytestream = self.frame_queue.get()
             await self.transmit(bytestream)
+            # cache frame
             with FrameCache() as fc:
                 fc.post(bytestream)
             await asyncio.sleep(tc.IDLE_SLEEP)
 
-    async def transmit(self, data: bytes):
+    async def transmit(self, data: bytes) -> None:
         try:
             self.ser.write(data)
         # Purge scheduler and reboot transmitter
