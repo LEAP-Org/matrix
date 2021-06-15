@@ -12,6 +12,7 @@ import asyncio
 import logging
 import random
 from queue import Queue
+from threading import Condition
 
 from tcs.event.registry import Registry as events
 from tcs.tcu.config import TCUConfig as tc
@@ -24,9 +25,11 @@ class TransmissionControlUnit:
         self._log = logging.getLogger(__name__)
         # Data type field initialization
         self.port = port
+        self.next_condition = Condition()
         # event registration
         events.transmit.register(self.transmit)
         events.enqueue.register(self.enqueue)
+        events.uplink.register(self.uplink)
         self.frame_queue: Queue[bytes] = Queue()
         # initialize arduino serial connection
         try:
@@ -47,19 +50,24 @@ class TransmissionControlUnit:
             self.frame_queue.put(b)
         self._log.info("Queued payload: %s", data)
 
+    async def uplink(self) -> None:
+        with self.next_condition:
+            self.next_condition.notify()
+        self._log.info("Notified tcu runner for new frame")
+
     async def run(self):
         while True:
             # perform idle action if queue is empty
             if self.frame_queue.empty():
                 bytestream = bytes([random.randint(0, 255)])
+                await self.transmit(bytestream)
+                await asyncio.sleep(tc.IDLE_SLEEP)
             else:
                 # get new item from the queue
                 bytestream = self.frame_queue.get()
-            await self.transmit(bytestream)
-            # cache frame
-            with FrameCache() as fc:
-                fc.post(bytestream)
-            await asyncio.sleep(tc.IDLE_SLEEP)
+                await self.transmit(bytestream)
+                with self.next_condition:
+                    self.next_condition.wait(timeout=100)
 
     async def transmit(self, data: bytes) -> None:
         try:
@@ -67,4 +75,8 @@ class TransmissionControlUnit:
         # Purge scheduler and reboot transmitter
         except serial.SerialTimeoutException as exc:
             self._log.exception("Frame write to transmitter timed out: %s", exc)
-        self._log.info("Successfully wrote %s to tesseract transmitter", data)
+        else:
+            # cache frame
+            with FrameCache() as fc:
+                fc.post(data)
+            self._log.info("Successfully wrote %s to tesseract", data)
