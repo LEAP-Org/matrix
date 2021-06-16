@@ -25,14 +25,9 @@ class SocketInterface:
         self._log = logging.getLogger(__name__)
         host, port = addr.split(':')  # Port to listen on (non-privileged ports are > 1023)
         self.address = (host, int(port))
-        self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.soc.bind((self.host, self.port))
-        self._log.info("bound socket to address: %s", self.address)
-        self.host = host  # The server's hostname or IP address
-        self.port = port       # The port used by the server
         # socket for client connection
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.soc.bind((self.host, self.port))
+        self.soc.bind(self.address)
         self.client_connection: Optional[socket.socket] = None
         self._log.info("%s successfully instantiated", __name__)
 
