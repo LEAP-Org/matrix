@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 import sys
 import socket
-import os
 import logging
 import binascii
+import requests
+import json
+import time
+
 from typing import Tuple
 
 
@@ -15,12 +18,10 @@ logging.basicConfig(
 
 class Client:
 
-    def __init__(self, host='127.0.0.1', port=65432):
-        self.HOST = host  # The server's hostname or IP address
-        self.PORT = port       # The port used by the server
+    def __init__(self, host: str, port: int):
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.soc.connect((self.HOST, self.PORT))
-        self.message
+        self.soc.connect((host, port))
+        self.message = None
 
     def run(self, message: str):
         self.message = message
@@ -28,6 +29,7 @@ class Client:
         self.soc.send(message.encode())
         logging.debug("sent first message")
         for i in range(len(self.message)):
+            time.sleep(0.25)
             self.receive_frame(i)
         self.soc.close()
 
@@ -65,5 +67,12 @@ class Client:
 if __name__ == "__main__":
     args = sys.argv[1:]
     message = args[0]
-    c = Client()
+    apr = args[1]
+    response = requests.get('http://localhost:5000/v1/register',
+                            headers={'Content-Type': 'application/json', 'Apr': apr})
+    payload: dict = json.loads(response.content)
+    port = payload.get('port')
+    if port is None:
+        raise RuntimeError
+    c = Client(host='localhost', port=port)
     c.run(message)
