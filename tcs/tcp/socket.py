@@ -9,9 +9,11 @@ Dependencies
 Copyright © 2021 LEAP. All Rights Reserved.
 """
 
-import time
 import logging
 import socket
+import retry
+import binascii
+from typing import Optional, Tuple, Union
 
 from tcs.tcp.config import APConfig as ac
 from tcs.event.registry import Registry as events
@@ -21,71 +23,75 @@ class SocketInterface:
 
     def __init__(self, addr: str):
         self._log = logging.getLogger(__name__)
-        self.host, port = addr.split(':')  # Port to listen on (non-privileged ports are > 1023)
-        self.port = int(port)
+        host, port = addr.split(':')  # Port to listen on (non-privileged ports are > 1023)
+        self.address = (host, int(port))
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc.bind((self.host, self.port))
-        self._log.info("bound socket to %s:%s", self.host, self.port)
-        self.stop_flag = False
+        self._log.info("bound socket to address: %s", self.address)
+        self.host = host  # The server's hostname or IP address
+        self.port = port       # The port used by the server
+        # socket for client connection
+        self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.soc.bind((self.host, self.port))
+        self.client_connection: Optional[socket.socket] = None
         self._log.info("%s successfully instantiated", __name__)
 
+    def __del__(self):
+        self.soc.close()
+        self._log.info("Closed socket and dereferenced %s", self)
+
     def run(self):
-        while not self.stop_flag:
-            self.soc.listen()
-            clientsocket, addr = self.soc.accept()
-            # enqueue new data for sending
-            events.enqueue.execute("Hello World!".encode('utf-8'))
-            while True:
-                time.sleep(5)
+        self.soc.listen()
+        self.client_connection, addr = self.soc.accept()
+        self._log.debug("connection from %s", addr)
+        # receive ready response from client
+        data = self.client_connection.recv(1024)
+        self._log.debug("echo message from client: %s", data)
+        frames = len(data)
+        self._log.debug("number of transmission frames: %s", frames)
+        events.enqueue.execute(data)
+        try:
+            for b in data:
                 events.uplink.execute()
-            self.mainClientSocket = clientsocket
-            with clientsocket:
-                self._log.debug("connection from %s", addr)
-                # clientsocket.send(bytes("r", "utf-8"))
-                data = clientsocket.recv(1024)
-                self._log.debug("data: %s", data)
-                if data.decode() == "r":
-                    self.sendData(ac.SENSITIVE_DATA)
-        # after main event loop exits close the socket
-        self.soc.close()
+                self.send_frame(b.to_bytes(1, byteorder='little'))
+        except (RuntimeError, socket.error) as exc:
+            logging.exception("Maximum retry limit reached: \n%s", exc)
+        self.client_connection.close()
+        del self
 
-    def sendmsg(self, msg):
-        emsg = msg.encode()
-        self.mainClientSocket.send(emsg)
+    def send(self, data: Union[str, int]):
+        if type(data) is str: self.client_connection.send(data.encode())
+        elif type(data) is int: self.client_connection.send(bytes([data]))
+        logging.info("sent: %s to address: %s", data, self.client_connection.getsockname())
 
-    def parityCheck(self, bitdata):
-        counter = 0
-        for b in bitdata:
-            if b == "1":
-                counter = counter + 1
-        return counter % 2
+    def receive(self) -> Tuple[int, str]:
+        response = self.client_connection.recv(1024)
+        logging.debug("msgback: %s", response)
+        # parse msg back
+        str_crc, resp = response.decode().split('~')
+        crc = int(str_crc)
+        logging.debug("crc: %s, resp: %s", crc, resp)
+        return crc, resp
 
-    def sendFrameNumber(self, numFrames):
-        self.mainClientSocket.send(numFrames)
+    def createmsg(self, crcval, msg) -> str:
+        newmsg = str(crcval) + '~' + msg
+        return newmsg
 
-    def sendData(self, arrofb):
-        for i in range(ac.FRAME_CNT):
-            # creating random data to send
-            bdata = "{0:08b}".format(arrofb[i] & 0xff)
-            self._log.debug("bdata: %s", bdata)
-            if self.parityCheck(bdata) % 2 == 0:
-                self.sendmsg("0")
-                self._log.debug("sent 0 as parity")
-            else:
-                self.sendmsg("1")
-                self._log.debug("sent 1 as parity")
-            # send data
-            msgback = self.mainClientSocket.recv(1024)
-            self._log.debug("msgback: %s", msgback)
-            if msgback.decode() == "l":
-                self._log.debug("request to send last capture")
-                # send last capture
-            elif msgback.decode() != "rec":
-                self._log.debug("breaked")
-                break
-
-    def close(self) -> None:
-        """
-        Kill main event loop
-        """
-        self.soc.close()
+    @retry.retry(socket.error, tries=1)
+    @retry.retry(RuntimeError, tries=5)
+    def send_frame(self, data: bytes) -> None:
+        # store current crc32 data
+        frame_crc = binascii.crc32(data)
+        # store expected response
+        packet_crc = binascii.crc32(self.createmsg(frame_crc, 'UP').encode())
+        self.send(self.createmsg(frame_crc, 'UP'))
+        # receive response from client
+        crc, resp = self.receive()
+        # cube capture failed
+        if crc == packet_crc and resp == 'NACK':
+            logging.exception("Detected client tesseract capture error")
+            raise RuntimeError
+        # socket data scrambled
+        if crc != packet_crc and resp == 'NACK':
+            logging.exception("Detected socket error")
+            raise socket.error
