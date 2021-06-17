@@ -29,7 +29,7 @@ class Client:
         self.soc.send(message.encode())
         logging.debug("sent first message")
         for i in range(len(self.message)):
-            time.sleep(0.25)
+            time.sleep(5)
             self.receive_frame(i)
         self.soc.close()
 
