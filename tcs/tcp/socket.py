@@ -47,8 +47,8 @@ class SocketInterface:
         events.enqueue.execute(data)
         try:
             for b in data:
-                events.uplink.execute()
                 self.send_frame(b.to_bytes(1, byteorder='little'))
+                events.uplink.execute()
         except (RuntimeError, socket.error) as exc:
             logging.exception("Maximum retry limit reached: \n%s", exc)
         self.client_connection.close()
