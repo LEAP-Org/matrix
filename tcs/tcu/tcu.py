@@ -25,6 +25,7 @@ class TransmissionControlUnit:
         self._log = logging.getLogger(__name__)
         # Data type field initialization
         self.port = port
+        self.sleep = False
         self.next_condition = Condition()
         # event registration
         events.transmit.register(self.transmit)
@@ -49,6 +50,9 @@ class TransmissionControlUnit:
             b = i.to_bytes(1, byteorder='little')
             self.frame_queue.put(b)
         self._log.info("Queued payload: %s", data)
+        while self.sleep:
+            self._log.info("Entering backoff state, waiting for main event loop")
+            await asyncio.sleep(1)
 
     async def uplink(self) -> None:
         with self.next_condition:
@@ -61,7 +65,9 @@ class TransmissionControlUnit:
             if self.frame_queue.empty():
                 bytestream = bytes([random.randint(0, 255)])
                 await self.transmit(bytestream)
+                self.sleep = True
                 await asyncio.sleep(tc.IDLE_SLEEP)
+                self.sleep = False
             else:
                 # get new item from the queue
                 bytestream = self.frame_queue.get()
