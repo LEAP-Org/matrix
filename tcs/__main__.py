@@ -1,48 +1,77 @@
+# -*- coding: utf-8 -*-
 """
 Transmission Control Software (TCS) for LEAP™ Tesseract
 =======================================================
-Updated: 2020-09
-Defines entry point for the transmission software driver
+Modified: 2021-06
+Entry point for the transmission software driver
 
-Copyright © 2020 LEAP. All Rights Reserved.
+Copyright © 2021 LEAP. All Rights Reserved.
 """
-import logging
-import os
 import sys
+import getopt
+import logging
+import asyncio
+from threading import Thread
 
+from tcs.api.server import app as server
 from tcs.tcu.tcu import TransmissionControlUnit
-from tcs.file.file_parser import FileParser
-from tcs.codec.cache import TransmissionCache
-from tcs.wap.ap_handler import ApHandler
+from tcs.__version__ import __version__
 
-class bcolors:
-    """Class defining escape sequences for terminal color printing"""
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
-logging.info("Validating runtime context ...")
-if os.environ['TCS_ENV'] not in ('dev', 'demo', 'server'):
-    logging.critical("Unexpected runtime context.")
-    sys.exit(1)
-if int(os.environ['DIM']) < 0:
-    logging.error("Received unexpected cube dimension size. Cube dimension must be a power of 2.")
-    sys.exit(1)
+def usage(exit_code: int) -> None:
+    print("""
+    LEAP™ Transmission Control Software.
 
-logging.info("{} complete".format(bcolors.OKGREEN + "✓" + bcolors.ENDC))
-logging.info("Starting Access Point Handler ...")
-ApHandler()
-logging.info("{} complete".format(bcolors.OKGREEN + "✓" + bcolors.ENDC))
-logging.info("Starting File Parser ...")
-# FileParser()
-logging.info("{} complete".format(bcolors.OKGREEN + "✓" + bcolors.ENDC))
-logging.info("Starting Transmission Cache ...")
-TransmissionCache()
-logging.info("{} complete".format(bcolors.OKGREEN + "✓" + bcolors.ENDC))
-logging.info("Starting Transmission Control Unit ...")
-TransmissionControlUnit()
+    Usage:
+        python3 -m tcs -s /dev/ttyUSB0 -a 127.0.0.1:65432
+        python3 -m tcs --serial-port /dev/ttyUSB0 --address 127.0.0.1:65432
+        python3 -m tcs --version=
+        python3 -m tcs --help=
+
+    Options:
+        -h --help\t\t Show this screen.
+        -v --version\t\t Show version.
+        -s --serial-port\t\t Set arduino serial port
+        -a --address\t\t Set server address in <HOST:PORT> format
+    """)
+    sys.exit(exit_code)
+
+
+def main(argv: list) -> None:
+    serial = None
+    address = None
+    opts = []
+    try:
+        opts, _ = getopt.getopt(argv, "s:a:h:v:", ["serial-port=", "address=", "help=", "version="])
+    except getopt.GetoptError:
+        print("command contained unexpected arguments")
+        usage(exit_code=2)
+    if opts == []: usage(exit_code=2)
+    for opt, arg in opts:
+        if opt in ("-s", "--serial-port"):
+            serial = arg
+        elif opt in ("-a", "--address"):
+            address = arg
+        elif opt in ("-v", "--version"):
+            print("LEAP TCS version: {}".format(__version__))
+            sys.exit(0)
+        else:
+            usage(exit_code=0)
+
+    _log.info("Initializing Transmission Control Unit")
+    if serial is None: tcu = TransmissionControlUnit()  # initialize tcu with default port
+    else: tcu = TransmissionControlUnit(serial)
+
+    _log.info("Initializing Server")
+    # initialize socket
+    host, port = address.split(':')  # Port to listen on (non-privileged ports are > 1023)
+    port = int(port)
+    Thread(name="api", target=server.run, kwargs={'host': host, 'port': port,
+           'debug': True, 'use_reloader': False}, daemon=True).start()
+    asyncio.run(tcu.run())
+
+
+if __name__ == '__main__':
+    _log = logging.getLogger(__name__)
+    # extract args from argument vector
+    main(sys.argv[1:])
