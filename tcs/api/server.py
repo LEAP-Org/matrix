@@ -3,7 +3,6 @@ from flask import Flask, request, abort, jsonify
 from flask.wrappers import Response
 from tcs.cache.cache import FrameCache
 from tcs.tcp.socket import SocketInterface
-from tcs.event.registry import Registry as events
 
 app = Flask(__name__)
 

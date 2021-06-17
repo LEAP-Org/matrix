@@ -15,7 +15,6 @@ import retry
 import binascii
 from typing import Optional, Tuple, Union
 
-from tcs.tcp.config import APConfig as ac
 from tcs.event.registry import Registry as events
 
 
